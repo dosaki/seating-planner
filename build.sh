@@ -10,11 +10,17 @@ CURRENT_DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 
 cd "${CURRENT_DIR}"
 
-DEVMODE="$1"
+ARG="$1"
+if [[ "${ARG}" == "--dev" ]];then
+  IS_DEV_MODE="TRUE"
+fi
+if [[ "${ARG}" == "--dist" ]] || [[ "${ARG}" == "" ]];then
+  IS_DIST="TRUE"
+fi
 
 rm -r ./app
 
-if [[ "${DEVMODE}" == "--dev" ]]; then
+if [[ "${IS_DEV_MODE}" == "TRUE" ]]; then
     ./node_modules/webpack/bin/webpack.js --mode development
 else
     ./node_modules/webpack/bin/webpack.js
@@ -22,13 +28,14 @@ fi
 
 cp -r ./static/* ./app/
 
-rm -r ./dist
-mkdir ./dist
-zip -r ./dist/seating-planner.zip ./app/
-
-size=`du -b ./dist/seating-planner.zip | awk '{print $1}'`
-if [[ $((size - 13312)) -gt 0 ]]; then
-  echo -e "\e[93m\e[1m[WARNING] TOO BIG! File size is ${size}.\e[39m"
-else
-  echo -e "\e[92m\e[1m[SUCCESS] File size under 13k: ${size}.\e[39m"
+if [[ "${IS_DIST}" == "TRUE" ]]; then
+  rm -r ./dist
+  mkdir ./dist
+  zip a -r ./dist/seating-planner.zip ./app/* -xr!*.map
+  size=`du -b ./dist/seating-planner.zip | awk '{print $1}'`
+  if [[ $((size - 13312)) -gt 0 ]]; then
+    echo -e "\e[93m\e[1m[WARNING] TOO BIG! File size is ${size}.\e[39m"
+  else
+    echo -e "\e[92m\e[1m[SUCCESS] File size under 13k: ${size}.\e[39m"
+  fi
 fi
