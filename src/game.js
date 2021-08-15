@@ -2,26 +2,27 @@ import { Person } from './entities/person';
 import { Room } from './entities/room';
 import { Table } from './entities/table';
 import { UI } from './ui/ui';
+import { generateName } from './utils/name-gen';
 import { pick } from './utils/random-utils';
 
 const canvas = document.querySelector('[game_area]');
 canvas.width = window.innerWidth - 5;
 canvas.height = window.innerHeight - 5;
 const ctx = canvas.getContext('2d');
+canvas.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); };
 
 const ui = new UI(ctx, canvas.width, canvas.height);
-const people = [
-    new Person("Manuel", "male").init(),
-    new Person("Virgulino", "male").init(),
-    new Person("Victoria", "female").init(),
-    new Person("Helena", "female").init(),
-    new Person("Marlene", "female").init()
-];
-ui.addToHand(...people);
+const people = new Array(ui.handLimit-1).fill(0).map(ignored => {
+    const gender = pick("female", "male");
+    return new Person(generateName(gender), gender).init();
+});
+ui.addToHand(...people, new Table(4));
 
 const room = new Room();
-room.addTable(6, { x: 120, y: 120 });
-room.addTable(4, { x: 520, y: 120 });
+const startingTable = new Table(6);
+startingTable.x = window.innerWidth/2 - startingTable.rectangle[2]/2
+startingTable.y = window.innerHeight/2 - startingTable.rectangle[3]/2
+room.addTable(startingTable);
 
 const mousePos = { x: 0, y: 0 };
 document.addEventListener("mousemove", function (e) {
@@ -29,17 +30,43 @@ document.addEventListener("mousemove", function (e) {
     mousePos.y = e.clientY;
 });
 
-let selectedPerson = null;
+let selection = null;
+
 document.addEventListener("mousedown", function (e) {
-    selectedPerson = ui.checkClicked(mousePos);
+    if (e.button === 0) {
+        selection = ui.checkClicked(mousePos) || room.checkClicked(mousePos);
+        ui.tooltipInfo.content = null;
+    }
 });
 
 document.addEventListener("mouseup", function (e) {
-    if (selectedPerson) {
-        const table = room.checkClicked(mousePos);
-        if (table) {
-            table.add(selectedPerson);
-            ui.removeFromHand(selectedPerson);
+    if (e.button === 0 && selection) {
+        if (selection instanceof Person) {
+            const table = room.checkClicked(mousePos);
+            if (table && table instanceof Table) {
+                room.tables.forEach(t => {
+                    t.remove(selection);
+                });
+                table.add(selection);
+                ui.removeFromHand(selection);
+            }
+        }
+        if (selection instanceof Table) {
+            selection.x = mousePos.x;
+            selection.y = mousePos.y;
+            room.addTable(selection);
+            ui.removeFromHand(selection);
+        }
+    }
+    if (e.button === 2) {
+        const clickedThing = room.checkClicked(mousePos);
+        if (clickedThing instanceof Person) {
+            ui.tooltipInfo.content = [clickedThing.name, ...clickedThing.traits.map(t => t.name)];
+            ui.tooltipInfo.x = mousePos.x;
+            ui.tooltipInfo.y = mousePos.y;
+        }
+        if (!clickedThing) {
+            ui.tooltipInfo.content = null;
         }
     }
 });
@@ -47,17 +74,23 @@ document.addEventListener("mouseup", function (e) {
 let last = 0;
 window.main = function (now) {
     window.requestAnimationFrame(main);
-    // each 2 seconds call the createNewObject() function
-    if(!last || now - last >= 10*1000) {
-        last=now;
-        if(pick(true, false, false) && !ui.atHandLimit){
-            ui.addToHand(new Person("???", pick("female", "male")).init());
+    if (!last || now - last >= 5 * 1000) {
+        last = now;
+        const tryTable = pick(true, false, false, false);
+        if (pick(true, false) && !ui.atHandLimit) {
+            if (tryTable) {
+                ui.addToHand(new Table(pick(2, 4, 6, 8), 0, 0));
+            } else {
+                const gender = pick("female", "male");
+                ui.addToHand(new Person(generateName(gender), gender).init());
+            }
         }
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ui.drawHand();
     room.draw(ctx);
+    ui.drawTooltip();
 };
 
 main(); // Start the cycle

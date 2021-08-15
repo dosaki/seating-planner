@@ -28,8 +28,15 @@ export class Person {
         return cardDimensions;
     }
 
+    get personDimensions() {
+        return {
+            width: 210,
+            height: 345,
+        };
+    }
+
     scorePerson(person) {
-        return this.traits.map(t => person.traits.map(pt => t.likes(pt) ? 10 : 0 + t.dislikes(pt) ? -10 : 0)).flat().reduce((a,b)=>a+b,0);
+        return this.traits.map(t => person.traits.map(pt => t.likes(pt) ? 10 : 0 + t.dislikes(pt) ? -10 : 0)).flat().reduce((a, b) => a + b, 0);
     }
 
     generateTraits() {
@@ -69,17 +76,8 @@ export class Person {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
-    drawCard(ctx, position, scale) {
+    drawTraitBox(ctx, position, scale) {
         const _scale = scale || { x: 1, y: 1 };
-        ctx.scale(_scale.x, _scale.y);
-        ctx.translate(position.x, position.y);
-        ctx.fillStyle = "#f1dbbb";
-        ctx.fillRect(4, 0, cardDimensions.width, cardDimensions.height);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-        this.draw(ctx, { x: position.x, y: position.y - 5 }, scale);
-
-
         ctx.scale(_scale.x, _scale.y);
         ctx.fillStyle = "#cdc8c4";
         const infoBoxX = position.x + (cardDimensions.border / 2);
@@ -89,15 +87,29 @@ export class Person {
         ctx.lineWidth = cardDimensions.border;
         ctx.strokeStyle = "#9a8472";
         ctx.stroke(new Path2D(`M ${infoBoxX},${infoBoxY} h ${cardInfoDimensions.width}`));
-        ctx.strokeRect(position.x + (cardDimensions.border / 2), position.y + (cardDimensions.border / 2), cardDimensions.width - cardDimensions.border, cardDimensions.height - cardDimensions.border);
 
-        ctx.font = '32px serif';
+        ctx.font = '32px monospace';
         ctx.fillStyle = "#000000";
         this.traits.forEach((t, i) => {
             ctx.fillText(t.name, infoBoxX + 20, infoBoxY + 40 + (40 * i));
         });
+    }
 
-        ctx.font = '12px serif';
+    drawCard(ctx, position, scale) {
+        const _scale = scale || { x: 1, y: 1 };
+        ctx.scale(_scale.x, _scale.y);
+        ctx.fillStyle = "#f1dbbb";
+        ctx.fillRect(position.x+4, position.y, cardDimensions.width, cardDimensions.height);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        this.draw(ctx, { x: position.x, y: position.y - 5 }, scale);
+
+        this.drawTraitBox(ctx, position, scale);
+
+        ctx.strokeStyle = "#9a8472";
+        ctx.strokeRect(position.x + (cardDimensions.border / 2), position.y + (cardDimensions.border / 2), cardDimensions.width - cardDimensions.border, cardDimensions.height - cardDimensions.border);
+
+        ctx.font = '12px monospace';
         ctx.lineWidth = 0;
         ctx.fillStyle = "transparent";
         ctx.strokeStyle = "transparent";
