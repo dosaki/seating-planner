@@ -31,7 +31,7 @@ cp -r ./static/* ./app/
 if [[ "${IS_DIST}" == "TRUE" ]]; then
   rm -r ./dist
   mkdir ./dist
-  zip a -r ./dist/seating-planner.zip ./app/* -xr!*.map
+  7z a -r ./dist/seating-planner.zip ./app/* -xr!*.map
   size=`du -b ./dist/seating-planner.zip | awk '{print $1}'`
   if [[ $((size - 13312)) -gt 0 ]]; then
     echo -e "\e[93m\e[1m[WARNING] TOO BIG! File size is ${size}.\e[39m"
