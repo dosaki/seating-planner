@@ -51,7 +51,7 @@ document.addEventListener("mouseup", function (e) {
                 ui.removeFromHand(selection);
             }
         }
-        if (selection instanceof Table) {
+        if (selection instanceof Table && !ui.checkClicked(mousePos) && !room.checkClicked(mousePos)) {
             selection.x = mousePos.x;
             selection.y = mousePos.y;
             room.addTable(selection);
@@ -76,8 +76,8 @@ window.main = function (now) {
     window.requestAnimationFrame(main);
     if (!last || now - last >= 5 * 1000) {
         last = now;
-        const tryTable = pick(true, false, false, false);
         if (pick(true, false) && !ui.atHandLimit) {
+            const tryTable = ui.hand.filter(c=> c instanceof Table).length <= 1 && pick(true, false, false, false, false, false, false);
             if (tryTable) {
                 ui.addToHand(new Table(pick(2, 4, 6, 8), 0, 0));
             } else {
@@ -88,8 +88,8 @@ window.main = function (now) {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ui.drawHand();
     room.draw(ctx);
+    ui.drawHand();
     ui.drawTooltip();
 };
 

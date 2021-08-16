@@ -115,4 +115,8 @@ export class Person {
         ctx.strokeStyle = "transparent";
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
+
+    drawHappinessChanges() {
+        
+    }
 }
