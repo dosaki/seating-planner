@@ -1,4 +1,4 @@
-import { coordInRectangle } from '../utils/geometry-utils';
+import { coordInRectangle } from '../utils/shape-utils';
 
 export class UI {
     constructor(ctx, width, height) {
@@ -55,6 +55,7 @@ export class UI {
 
     drawTooltip() {
         if (this.tooltipInfo.content) {
+            this.ctx.save();
             this.ctx.translate(this.tooltipInfo.x, this.tooltipInfo.y);
             this.ctx.fillStyle = "#f1dbbb";
             this.ctx.fillRect(0, 0, 150, (this.tooltipInfo.content.length * 20) + 20);
@@ -69,7 +70,7 @@ export class UI {
             });
 
             this.ctx.fillStyle = "transparent";
-            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+            this.ctx.restore();
         }
     }
 }

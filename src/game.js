@@ -20,8 +20,8 @@ ui.addToHand(...people, new Table(4));
 
 const room = new Room();
 const startingTable = new Table(6);
-startingTable.x = window.innerWidth/2 - startingTable.rectangle[2]/2
-startingTable.y = window.innerHeight/2 - startingTable.rectangle[3]/2
+startingTable.x = window.innerWidth/2 - startingTable.width/2
+startingTable.y = window.innerHeight/2 - startingTable.height/2
 room.addTable(startingTable);
 
 const mousePos = { x: 0, y: 0 };
@@ -47,15 +47,17 @@ document.addEventListener("mouseup", function (e) {
                 room.tables.forEach(t => {
                     t.remove(selection);
                 });
-                table.add(selection);
-                ui.removeFromHand(selection);
+                if(table.add(selection)){
+                    ui.removeFromHand(selection);
+                }
             }
         }
         if (selection instanceof Table && !ui.checkClicked(mousePos) && !room.checkClicked(mousePos)) {
             selection.x = mousePos.x;
             selection.y = mousePos.y;
-            room.addTable(selection);
-            ui.removeFromHand(selection);
+            if(room.addTable(selection)){
+                ui.removeFromHand(selection);
+            }
         }
     }
     if (e.button === 2) {
@@ -72,12 +74,13 @@ document.addEventListener("mouseup", function (e) {
 });
 
 let last = 0;
+window.speed = 1;
 window.main = function (now) {
     window.requestAnimationFrame(main);
-    if (!last || now - last >= 5 * 1000) {
+    if (!last || now - last >= 5 * (1000*window.speed)) {
         last = now;
         if (pick(true, false) && !ui.atHandLimit) {
-            const tryTable = ui.hand.filter(c=> c instanceof Table).length <= 1 && pick(true, false, false, false, false, false, false);
+            const tryTable = ui.hand.filter(c=> c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, false, false, false, false, false, false));
             if (tryTable) {
                 ui.addToHand(new Table(pick(2, 4, 6, 8), 0, 0));
             } else {
@@ -88,9 +91,15 @@ window.main = function (now) {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth=2
+    ctx.strokeStyle="#000000"
+    ctx.stroke(new Path2D(`M ${canvas.width/2},0 ${canvas.width/2}, ${canvas.height}`));
+    ctx.stroke(new Path2D(`M 0,${canvas.height/2} ${canvas.width}, ${canvas.height/2}`));
     room.draw(ctx);
     ui.drawHand();
     ui.drawTooltip();
+    // room.tables.forEach(t=>t.spaces.forEach(p => p._debug.drawn = 0))
+    // ui.hand.forEach(p => p._debug && (p._debug.drawn = 0))
 };
 
 main(); // Start the cycle

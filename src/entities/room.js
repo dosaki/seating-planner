@@ -1,4 +1,4 @@
-import { coordInRectangle } from '../utils/geometry-utils';
+import { coordInRectangle } from '../utils/shape-utils';
 import { Table } from './table';
 
 export class Room {
@@ -6,18 +6,25 @@ export class Room {
         this.tables = [];
     }
 
+    get tablesAreFull() {
+        return !this.tables.find(t => !t.isFull);
+    }
+
     addTable(sizeOrTable, pos) {
-        if(sizeOrTable instanceof Table){
+        if (sizeOrTable instanceof Table) {
             this.tables.push(sizeOrTable);
         } else {
             this.tables.push(new Table(sizeOrTable, pos.x, pos.y));
         }
+        this.tables = [...new Set(this.tables)];
+        return true;
     }
 
     checkClickedTable(pos) {
         let tableClicked = null;
         [...this.tables].forEach(table => {
-            if (coordInRectangle(pos, table)) {
+            console.log(pos, table.rect)
+            if (coordInRectangle(pos, table.dimensions)) {
                 tableClicked = table;
             }
         });

@@ -9,7 +9,7 @@ const compatibleTraits = (trait) => {
 const cardDimensions = {
     width: 234,
     height: 380,
-    border: 4
+    border: 8
 };
 const cardInfoDimensions = {
     width: 234,
@@ -22,17 +22,13 @@ export class Person {
         this.traits = [];
         this.mood = null;
         this.image = null;
+        // this._debug = {
+        //     drawn:0
+        // }
     }
 
     get cardDimensions() {
         return cardDimensions;
-    }
-
-    get personDimensions() {
-        return {
-            width: 210,
-            height: 345,
-        };
     }
 
     scorePerson(person) {
@@ -51,10 +47,11 @@ export class Person {
         return this;
     }
 
-    draw(ctx, position, scale) {
+    draw(ctx, scale) {
         const _scale = scale || { x: 1, y: 1 };
+        ctx.save();
+        ctx.translate(16, -6);
         ctx.scale(_scale.x, _scale.y);
-        ctx.translate(position.x + 16, position.y - 6);
         ctx.scale(1.04, 1.04);
         const shadow = new Path2D();
         this.image.forEach((section) => {
@@ -63,60 +60,69 @@ export class Person {
         ctx.filter = 'blur(4px)';
         ctx.fillStyle = "#00000060";
         ctx.fill(shadow);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.filter = "none";
+        ctx.restore();
 
+        ctx.save();
+        ctx.translate(15, 0);
         ctx.scale(_scale.x, _scale.y);
-        ctx.translate(position.x + 15, position.y);
         this.image.forEach((section) => {
             const path = new Path2D(section.path);
             ctx.fillStyle = section.colour;
             ctx.fill(path);
         });
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.restore();
+        // this._debug.drawn++;
     }
 
-    drawTraitBox(ctx, position, scale) {
-        const _scale = scale || { x: 1, y: 1 };
-        ctx.scale(_scale.x, _scale.y);
+    drawTraitBox(ctx) {
         ctx.fillStyle = "#cdc8c4";
-        const infoBoxX = position.x + (cardDimensions.border / 2);
-        const infoBoxY = position.y + (cardDimensions.border / 2) + (cardDimensions.height - cardInfoDimensions.height);
-        ctx.fillRect(infoBoxX, infoBoxY, cardInfoDimensions.width, cardInfoDimensions.height);
+        const infoBoxX = cardDimensions.border / 2;
+        const infoBoxY = (cardDimensions.border / 2) + (cardDimensions.height - cardInfoDimensions.height);
+        ctx.translate(infoBoxX, infoBoxY);
+        ctx.fillRect(0, 0, cardInfoDimensions.width, cardInfoDimensions.height);
 
         ctx.lineWidth = cardDimensions.border;
         ctx.strokeStyle = "#9a8472";
-        ctx.stroke(new Path2D(`M ${infoBoxX},${infoBoxY} h ${cardInfoDimensions.width}`));
+        ctx.stroke(new Path2D(`M 0,0 h ${cardInfoDimensions.width}`));
 
         ctx.font = '32px monospace';
         ctx.fillStyle = "#000000";
         this.traits.forEach((t, i) => {
-            ctx.fillText(t.name, infoBoxX + 20, infoBoxY + 40 + (40 * i));
+            ctx.fillText(t.name, 20, 40 + (40 * i));
         });
+        ctx.translate(-infoBoxX, -infoBoxY);
     }
 
-    drawCard(ctx, position, scale) {
+    drawCard(ctx, pos, scale) {
+        ctx.save();
         const _scale = scale || { x: 1, y: 1 };
         ctx.scale(_scale.x, _scale.y);
+        ctx.translate(pos.x, pos.y);
         ctx.fillStyle = "#f1dbbb";
-        ctx.fillRect(position.x+4, position.y, cardDimensions.width, cardDimensions.height);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillRect(0, 0, cardDimensions.width, cardDimensions.height);
 
-        this.draw(ctx, { x: position.x, y: position.y - 5 }, scale);
-
-        this.drawTraitBox(ctx, position, scale);
+        this.draw(ctx);
+        this.drawTraitBox(ctx);
 
         ctx.strokeStyle = "#9a8472";
-        ctx.strokeRect(position.x + (cardDimensions.border / 2), position.y + (cardDimensions.border / 2), cardDimensions.width - cardDimensions.border, cardDimensions.height - cardDimensions.border);
+        ctx.lineWidth = cardDimensions.border;
+        ctx.strokeRect(0, 0, cardDimensions.width, cardDimensions.height);
 
         ctx.font = '12px monospace';
-        ctx.lineWidth = 0;
+        ctx.lineWidth = 1;
         ctx.fillStyle = "transparent";
         ctx.strokeStyle = "transparent";
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.restore();
     }
 
     drawHappinessChanges() {
-        
+
     }
 }
+
+Person.cardDimensions = cardDimensions;
+Person.dimensions = {
+    width: 210,
+    height: 345,
+};
