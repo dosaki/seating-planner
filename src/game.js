@@ -91,10 +91,10 @@ window.main = function (now) {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.lineWidth=2
-    ctx.strokeStyle="#000000"
-    ctx.stroke(new Path2D(`M ${canvas.width/2},0 ${canvas.width/2}, ${canvas.height}`));
-    ctx.stroke(new Path2D(`M 0,${canvas.height/2} ${canvas.width}, ${canvas.height/2}`));
+    // ctx.lineWidth=2
+    // ctx.strokeStyle="#000000"
+    // ctx.stroke(new Path2D(`M ${canvas.width/2},0 ${canvas.width/2}, ${canvas.height}`));
+    // ctx.stroke(new Path2D(`M 0,${canvas.height/2} ${canvas.width}, ${canvas.height/2}`));
     room.draw(ctx);
     ui.drawHand();
     ui.drawTooltip();
