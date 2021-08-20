@@ -58,14 +58,21 @@ export class UI {
             this.ctx.save();
             this.ctx.translate(this.tooltipInfo.x, this.tooltipInfo.y);
             this.ctx.fillStyle = "#f1dbbb";
-            this.ctx.fillRect(0, 0, 150, (this.tooltipInfo.content.length * 20) + 20);
+            console.log(this.tooltipInfo.content.reduce((a,b)=>Math.max(a,b.length),0))
+            const fontsize = 16;
+            const width = 20 + this.tooltipInfo.content.reduce((a,b)=>Math.max(a,b.length),0) * (fontsize*0.5625);
+            this.ctx.fillRect(0, 0, width, (this.tooltipInfo.content.length * 20) + 20);
             
             this.ctx.strokeStyle = "#9a8472"
-            this.ctx.strokeRect(0, 0, 150, (this.tooltipInfo.content.length * 20) + 20);
+            this.ctx.strokeRect(0, 0, width, (this.tooltipInfo.content.length * 20) + 20);
 
-            this.ctx.font = '16px monospace';
             this.ctx.fillStyle = "#000000";
             this.tooltipInfo.content.forEach((text, i) => {
+                if(i > 0){
+                    this.ctx.font = `${fontsize-2}px monospace`;
+                } else {
+                    this.ctx.font = `bold ${fontsize}px monospace`;
+                }
                 this.ctx.fillText(text, 10, 20 + (20 * i));
             });
 

@@ -27,6 +27,10 @@ export class Person {
         // }
     }
 
+    get shortName() {
+        return `${this.name.split(" ")[0][0]}. ${this.name.split(" ").slice(1).join(" ")}`
+    }
+
     get cardDimensions() {
         return cardDimensions;
     }
@@ -94,6 +98,23 @@ export class Person {
         ctx.translate(-infoBoxX, -infoBoxY);
     }
 
+    drawNameBox(ctx) {
+        ctx.fillStyle = "#cdc8c4";
+        const infoBoxX = cardDimensions.border / 2;
+        const infoBoxY = 0;
+        ctx.translate(infoBoxX, infoBoxY);
+        ctx.fillRect(0, 0, cardDimensions.width, 50);
+
+        ctx.lineWidth = cardDimensions.border;
+        ctx.strokeStyle = "#9a8472";
+        ctx.stroke(new Path2D(`M 0,50 h ${cardInfoDimensions.width}`));
+
+        ctx.font = 'bold 32px monospace';
+        ctx.fillStyle = "#000000";
+        ctx.fillText(this.shortName, 10, 40);
+        ctx.translate(-infoBoxX, -infoBoxY);
+    }
+
     drawCard(ctx, pos, scale) {
         ctx.save();
         const _scale = scale || { x: 1, y: 1 };
@@ -104,6 +125,7 @@ export class Person {
 
         this.draw(ctx);
         this.drawTraitBox(ctx);
+        this.drawNameBox(ctx);
 
         ctx.strokeStyle = "#9a8472";
         ctx.lineWidth = cardDimensions.border;
