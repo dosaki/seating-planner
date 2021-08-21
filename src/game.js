@@ -24,23 +24,59 @@ startingTable.x = window.innerWidth / 2 - startingTable.width / 2;
 startingTable.y = window.innerHeight / 2 - startingTable.height / 2;
 room.addTable(startingTable);
 
-const mousePos = { x: 0, y: 0 };
-document.addEventListener("mousemove", function (e) {
-    mousePos.x = e.clientX;
-    mousePos.y = e.clientY;
-});
-
 let selection = null;
+let hoveredSelection = null;
+const mousePos = { x: 0, y: 0 };
+const mousePosPress = { x: null, y: null };
 
-document.addEventListener("mousedown", function (e) {
-    if (e.button === 0) {
+let longTouchTimer;
+let isLongTouch = false;
+const touchDuration = 500;
+
+let resizeTime;
+let isResizing = false;
+const resizeDurationTimeout = 200;
+
+function onResize() {
+    resizeTime = new Date();
+    if (isResizing === false) {
+        isResizing = true;
+        setTimeout(onResizeEnd, resizeDurationTimeout);
+    }
+}
+
+function onResizeEnd() {
+    if (new Date() - resizeTime < resizeDurationTimeout) {
+        setTimeout(onResizeEnd, resizeDurationTimeout);
+    } else {
+        isResizing = false;
+        canvas.width = window.innerWidth - 5;
+        canvas.height = window.innerHeight - 5;
+        ui.width = window.innerWidth - 5;
+        ui.height = window.innerHeight - 5;
+    }
+}
+
+function onMove(e) {
+    mousePos.x = e.touches ? e.touches[0].clientX : e.clientX;
+    mousePos.y = e.touches ? e.touches[0].clientY : e.clientY;
+    hoveredSelection = room.checkClicked(mousePos);
+}
+
+function onPress(e) {
+    onMove(e);
+    mousePosPress.x = mousePos.x;
+    mousePosPress.y = mousePos.y;
+    if ((e.button === 0 || e.touches)) {
         selection = ui.checkClicked(mousePos) || room.checkClicked(mousePos);
         ui.tooltipInfo.content = null;
     }
-});
+}
 
-document.addEventListener("mouseup", function (e) {
-    if (e.button === 0 && selection) {
+function onLetGo(e) {
+    mousePosPress.x = null;
+    mousePosPress.y = null;
+    if ((e.button === 0 || (!isLongTouch && e.touches)) && selection) {
         if (selection instanceof Person) {
             const table = room.checkClicked(mousePos);
             if (table && table instanceof Table) {
@@ -60,7 +96,7 @@ document.addEventListener("mouseup", function (e) {
             }
         }
     }
-    if (e.button === 2) {
+    if (e.button === 2 || isLongTouch) {
         const clickedThing = room.checkClicked(mousePos);
         if (clickedThing instanceof Person) {
             ui.tooltipInfo.content = [clickedThing.name, ...clickedThing.traits.map(t => t.name)];
@@ -72,6 +108,40 @@ document.addEventListener("mouseup", function (e) {
         }
     }
     selection = null;
+    room.tables.forEach(t => t.spaces.forEach(p => p.personToMatch = null));
+}
+
+window.addEventListener("resize", onResize, true);
+
+document.addEventListener("mousemove", onMove);
+document.addEventListener("touchmove", onMove);
+document.addEventListener("touchmove", () => {
+    if (longTouchTimer) {
+        clearTimeout(longTouchTimer);
+    }
+    isLongTouch = false;
+});
+
+document.addEventListener("mousedown", onPress);
+document.addEventListener("touchstart", onPress);
+document.addEventListener("touchstart", function (e) {
+    longTouchTimer = setTimeout(() => isLongTouch = true, touchDuration);
+});
+
+document.addEventListener("mouseup", onLetGo);
+document.addEventListener("touchend", onLetGo);
+document.addEventListener("touchcancel", onLetGo);
+document.addEventListener("touchend", () => {
+    if (longTouchTimer) {
+        clearTimeout(longTouchTimer);
+    }
+    isLongTouch = false;
+});
+document.addEventListener("touchcancel", () => {
+    if (longTouchTimer) {
+        clearTimeout(longTouchTimer);
+    }
+    isLongTouch = false;
 });
 
 let last = 0;
@@ -80,6 +150,12 @@ window.main = function (now) {
     window.requestAnimationFrame(main);
     if (!last || now - last >= 5 * (1000 * window.speed)) {
         last = now;
+        room.tables.forEach(t => t.updateHappiness());
+        ui.hand.forEach(card => {
+            if(card instanceof Person){
+                card.happiness -= 3;
+            }
+        });
         if (pick(true, false) && !ui.atHandLimit) {
             const tryTable = ui.hand.filter(c => c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, false, false, false, false, false, false));
             if (tryTable) {
@@ -97,8 +173,9 @@ window.main = function (now) {
     // ctx.stroke(new Path2D(`M ${canvas.width/2},0 ${canvas.width/2}, ${canvas.height}`));
     // ctx.stroke(new Path2D(`M 0,${canvas.height/2} ${canvas.width}, ${canvas.height/2}`));
     room.draw(ctx);
-    ui.drawHand();
     ui.drawTooltip();
+    ui.drawHand();
+    ui.drawScore(room.totalScore);
     if (selection) {
         ctx.save();
         ctx.globalAlpha = 0.7;
@@ -112,6 +189,10 @@ window.main = function (now) {
         }
         selection.draw(ctx);
         ctx.restore();
+
+        if (selection instanceof Person && hoveredSelection && hoveredSelection instanceof Table) {
+            hoveredSelection.spaces.forEach(p => p.personToMatch = selection);
+        }
     }
     // room.tables.forEach(t=>t.spaces.forEach(p => p._debug.drawn = 0))
     // ui.hand.forEach(p => p._debug && (p._debug.drawn = 0))

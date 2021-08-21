@@ -10,6 +10,10 @@ export class Room {
         return !this.tables.find(t => !t.isFull);
     }
 
+    get totalScore() {
+        return this.tables.reduce((acc, table) => acc + table.happiness, 0);
+    }
+
     addTable(sizeOrTable, pos) {
         if (sizeOrTable instanceof Table) {
             this.tables.push(sizeOrTable);
@@ -42,8 +46,7 @@ export class Room {
     }
 
     checkClicked(pos) {
-        const clickedThing = this.checkClickedPerson(pos) || this.checkClickedTable(pos);
-        return clickedThing;
+        return this.checkClickedPerson(pos) || this.checkClickedTable(pos);
     }
 
     draw(ctx) {

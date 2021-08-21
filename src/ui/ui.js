@@ -1,5 +1,10 @@
 import { coordInRectangle } from '../utils/shape-utils';
 
+const cardDimensions = {
+    width: 234,
+    height: 380,
+    border: 8
+};
 export class UI {
     constructor(ctx, width, height) {
         this.ctx = ctx;
@@ -40,17 +45,19 @@ export class UI {
     drawHand() {
         this.areas = new Map();
         const adjustment = this.hand.length % 2 === 0 ? (this.hand.length / 2) - 0.5 : Math.floor(this.hand.length / 2);
+        this.ctx.save();
         this.hand.forEach((p, i) => {
             const coords = {
-                x: ((this.width - (p.cardDimensions.width / 4)) + (p.cardDimensions.width * (i - adjustment))),
-                y: this.height * 2 - (p.cardDimensions.height)
+                x: ((this.width - (cardDimensions.width / 4)) + (cardDimensions.width * (i - adjustment))),
+                y: this.height * 2 - (cardDimensions.height)
             };
             p.drawCard(
                 this.ctx,
                 coords,
                 { x: 0.5, y: 0.5 });
-            this.areas.set(p, { x: coords.x * 0.5, y: coords.y * 0.5, width: p.cardDimensions.width * 0.5, height: p.cardDimensions.height * 0.5 });
+            this.areas.set(p, { x: coords.x * 0.5, y: coords.y * 0.5, width: cardDimensions.width * 0.5, height: cardDimensions.height * 0.5 });
         });
+        this.ctx.restore();
     }
 
     drawTooltip() {
@@ -59,16 +66,16 @@ export class UI {
             this.ctx.translate(this.tooltipInfo.x, this.tooltipInfo.y);
             this.ctx.fillStyle = "#f1dbbb";
             const fontsize = 16;
-            const width = 20 + this.tooltipInfo.content.reduce((a,b)=>Math.max(a,b.length),0) * (fontsize*0.5625);
+            const width = 20 + this.tooltipInfo.content.reduce((a, b) => Math.max(a, b.length), 0) * (fontsize * 0.5625);
             this.ctx.fillRect(0, 0, width, (this.tooltipInfo.content.length * 20) + 20);
-            
-            this.ctx.strokeStyle = "#9a8472"
+
+            this.ctx.strokeStyle = "#9a8472";
             this.ctx.strokeRect(0, 0, width, (this.tooltipInfo.content.length * 20) + 20);
 
             this.ctx.fillStyle = "#000000";
             this.tooltipInfo.content.forEach((text, i) => {
-                if(i > 0){
-                    this.ctx.font = `${fontsize-2}px monospace`;
+                if (i > 0) {
+                    this.ctx.font = `${fontsize - 2}px monospace`;
                 } else {
                     this.ctx.font = `bold ${fontsize}px monospace`;
                 }
@@ -78,5 +85,21 @@ export class UI {
             this.ctx.fillStyle = "transparent";
             this.ctx.restore();
         }
+    }
+    
+    drawScore(score) {
+        this.ctx.save();
+        this.ctx.fillStyle = "#f1dbbb";
+        this.ctx.strokeStyle = "#9a8472";
+        this.ctx.translate(10, 10);
+        this.ctx.fillRect(0, 0, 60, 24);
+        this.ctx.strokeRect(0, 0, 60, 24);
+
+        this.ctx.font = '22px monospace';
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillText(score, 5, 20);
+
+        this.ctx.font = '12px monospace';
+        this.ctx.restore();
     }
 }

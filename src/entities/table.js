@@ -30,6 +30,12 @@ export class Table {
 
     get happiness() {
         return this.spaces.reduce((acc, person) => {
+            return acc + person.happiness;
+        },0);
+    }
+
+    get totalHappiness() {
+        return this.spaces.reduce((acc, person) => {
             return acc + (this.spaces.reduce((a, p) => {
                 return p === person ? 0 : a + person.scorePerson(p);
             }, 0));
@@ -85,11 +91,21 @@ export class Table {
     checkClicked(pos) {
         let personCardClicked = null;
         [...this.areas.keys()].forEach(person => {
-            if (coordInRectangle(pos, this.areas.get(person))) {
+            const area = this.areas.get(person);
+            if (coordInRectangle({x:pos.x, y:pos.y}, {x:area.x, y: area.y, width:area.width, height: area.height})) {
                 personCardClicked = person;
             }
         });
         return personCardClicked;
+    }
+
+    updateHappiness() {
+        return this.spaces.forEach(person => {
+            const tableScore = 0.1 * (this.spaces.reduce((a, p) => {
+                return p === person ? 0 : a + person.scorePerson(p);
+            }, 0));
+            person.happiness = person.happiness + tableScore;
+        });
     }
 
     drawTopRowPeople(ctx) {

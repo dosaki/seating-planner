@@ -1,20 +1,28 @@
 import * as traits from './traits';
 import { pick } from '../utils/random-utils';
 import { makePortrait } from '../helpers/portrait-generator';
+import { circle } from '../utils/shape-utils';
 
 const compatibleTraits = (trait) => {
     return Object.values(traits).filter(t => t !== trait && !t.incompatibleWith(trait) && !trait.incompatibleWith(t));
 };
 
-const cardDimensions = {
-    width: 234,
-    height: 380,
-    border: 8
+const happinessChangeColour = (score) => {
+    if (score >= 20) {
+        return "#1e8e3e";
+    }
+    if (score >= 10) {
+        return "#5fc53d";
+    }
+    if (score >= 0) {
+        return "#ffeb00";
+    }
+    if (score >= -10) {
+        return "#f3931c";
+    }
+    return "#ad0000";
 };
-const cardInfoDimensions = {
-    width: 234,
-    height: 100,
-};
+
 export class Person {
     constructor(name, gender) {
         this.name = name;
@@ -22,17 +30,35 @@ export class Person {
         this.traits = [];
         this.mood = null;
         this.image = null;
+        this.cardDimensions = {
+            width: 234,
+            height: 380,
+            border: 8
+        };
+        this.personToMatch = null;
+        this._happiness = 9;
         // this._debug = {
         //     drawn:0
         // }
     }
 
-    get shortName() {
-        return `${this.name.split(" ")[0][0]}. ${this.name.split(" ").slice(1).join(" ")}`
+    set happiness (value) {
+        this._happiness = Math.max(Math.min(value, 50), -50);
     }
 
-    get cardDimensions() {
-        return cardDimensions;
+    get happiness () {
+        return Math.max(Math.min(this._happiness, 50), -50);
+    }
+
+    get shortName() {
+        return `${this.name.split(" ")[0][0]}. ${this.name.split(" ").slice(1).join(" ")}`;
+    }
+
+    get cardInfoDimensions() {
+        return {
+            width: this.cardDimensions.width,
+            height: this.cardDimensions.height / 3.8
+        };
     }
 
     scorePerson(person) {
@@ -75,20 +101,25 @@ export class Person {
             ctx.fillStyle = section.colour;
             ctx.fill(path);
         });
+        if (this.personToMatch && this !== this.personToMatch) {
+            const happinessChange = this.scorePerson(this.personToMatch);
+            console.log(this.name, happinessChange);
+            circle(ctx, Person.dimensions.width / 2 - 15, -30, 30, happinessChangeColour(happinessChange), "fill");
+        }
         ctx.restore();
         // this._debug.drawn++;
     }
 
     drawTraitBox(ctx) {
-        ctx.fillStyle = "#cdc8c4";
-        const infoBoxX = cardDimensions.border / 2;
-        const infoBoxY = (cardDimensions.border / 2) + (cardDimensions.height - cardInfoDimensions.height);
+        const infoBoxX = this.cardDimensions.border / 2;
+        const infoBoxY = (this.cardDimensions.border / 2) + (this.cardDimensions.height - this.cardInfoDimensions.height);
         ctx.translate(infoBoxX, infoBoxY);
-        ctx.fillRect(0, 0, cardInfoDimensions.width, cardInfoDimensions.height);
+        ctx.fillStyle = "#cdc8c4f0";
+        ctx.fillRect(0, 0, this.cardInfoDimensions.width, this.cardInfoDimensions.height);
 
-        ctx.lineWidth = cardDimensions.border;
+        ctx.lineWidth = this.cardDimensions.border;
         ctx.strokeStyle = "#9a8472";
-        ctx.stroke(new Path2D(`M 0,0 h ${cardInfoDimensions.width}`));
+        ctx.stroke(new Path2D(`M 0,0 h ${this.cardInfoDimensions.width}`));
 
         ctx.font = '32px monospace';
         ctx.fillStyle = "#000000";
@@ -99,15 +130,15 @@ export class Person {
     }
 
     drawNameBox(ctx) {
-        ctx.fillStyle = "#cdc8c4";
-        const infoBoxX = cardDimensions.border / 2;
+        const infoBoxX = this.cardDimensions.border / 2;
         const infoBoxY = 0;
         ctx.translate(infoBoxX, infoBoxY);
-        ctx.fillRect(0, 0, cardDimensions.width, 50);
+        ctx.fillStyle = "#cdc8c4f0";
+        ctx.fillRect(0, 0, this.cardDimensions.width, 50);
 
-        ctx.lineWidth = cardDimensions.border;
+        ctx.lineWidth = this.cardDimensions.border;
         ctx.strokeStyle = "#9a8472";
-        ctx.stroke(new Path2D(`M 0,50 h ${cardInfoDimensions.width}`));
+        ctx.stroke(new Path2D(`M 0,50 h ${this.cardInfoDimensions.width}`));
 
         ctx.font = 'bold 32px monospace';
         ctx.fillStyle = "#000000";
@@ -120,16 +151,20 @@ export class Person {
         const _scale = scale || { x: 1, y: 1 };
         ctx.scale(_scale.x, _scale.y);
         ctx.translate(pos.x, pos.y);
-        ctx.fillStyle = "#f1dbbb";
-        ctx.fillRect(0, 0, cardDimensions.width, cardDimensions.height);
+        const gradient = ctx.createLinearGradient(0,0,0,256);
+        gradient.addColorStop(0, happinessChangeColour(this.happiness));
+        gradient.addColorStop(0.2, happinessChangeColour(this.happiness));
+        gradient.addColorStop(0.9, '#f1dbbb');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, this.cardDimensions.width, this.cardDimensions.height);
 
         this.draw(ctx);
         this.drawTraitBox(ctx);
         this.drawNameBox(ctx);
 
         ctx.strokeStyle = "#9a8472";
-        ctx.lineWidth = cardDimensions.border;
-        ctx.strokeRect(0, 0, cardDimensions.width, cardDimensions.height);
+        ctx.lineWidth = this.cardDimensions.border;
+        ctx.strokeRect(0, 0, this.cardDimensions.width, this.cardDimensions.height);
 
         ctx.font = '12px monospace';
         ctx.lineWidth = 1;
@@ -137,13 +172,8 @@ export class Person {
         ctx.strokeStyle = "transparent";
         ctx.restore();
     }
-
-    drawHappinessChanges() {
-
-    }
 }
 
-Person.cardDimensions = cardDimensions;
 Person.dimensions = {
     width: 210,
     height: 345,
