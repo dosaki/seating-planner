@@ -10,3 +10,12 @@ export const circle = (ctx, x, y, radius, colour, type) => {
     }
     ctx[type]();
 };
+
+export const halfCircle = (ctx, x, y, radius, colour, type, rotation) => {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, rotation*Math.PI/2, rotation*3*Math.PI/2);
+    if(colour){
+        ctx[`${type}Style`] = colour;
+    }
+    ctx[type]();
+};

@@ -58,7 +58,6 @@ export class UI {
             this.ctx.save();
             this.ctx.translate(this.tooltipInfo.x, this.tooltipInfo.y);
             this.ctx.fillStyle = "#f1dbbb";
-            console.log(this.tooltipInfo.content.reduce((a,b)=>Math.max(a,b.length),0))
             const fontsize = 16;
             const width = 20 + this.tooltipInfo.content.reduce((a,b)=>Math.max(a,b.length),0) * (fontsize*0.5625);
             this.ctx.fillRect(0, 0, width, (this.tooltipInfo.content.length * 20) + 20);

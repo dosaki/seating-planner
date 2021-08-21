@@ -12,7 +12,7 @@ const ctx = canvas.getContext('2d');
 canvas.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); };
 
 const ui = new UI(ctx, canvas.width, canvas.height);
-const people = new Array(ui.handLimit-1).fill(0).map(ignored => {
+const people = new Array(ui.handLimit - 1).fill(0).map(ignored => {
     const gender = pick("female", "male");
     return new Person(generateName(gender), gender).init();
 });
@@ -20,8 +20,8 @@ ui.addToHand(...people, new Table(4));
 
 const room = new Room();
 const startingTable = new Table(6);
-startingTable.x = window.innerWidth/2 - startingTable.width/2
-startingTable.y = window.innerHeight/2 - startingTable.height/2
+startingTable.x = window.innerWidth / 2 - startingTable.width / 2;
+startingTable.y = window.innerHeight / 2 - startingTable.height / 2;
 room.addTable(startingTable);
 
 const mousePos = { x: 0, y: 0 };
@@ -47,7 +47,7 @@ document.addEventListener("mouseup", function (e) {
                 room.tables.forEach(t => {
                     t.remove(selection);
                 });
-                if(table.add(selection)){
+                if (table.add(selection)) {
                     ui.removeFromHand(selection);
                 }
             }
@@ -55,7 +55,7 @@ document.addEventListener("mouseup", function (e) {
         if (selection instanceof Table && !ui.checkClicked(mousePos) && !room.checkClicked(mousePos)) {
             selection.x = mousePos.x;
             selection.y = mousePos.y;
-            if(room.addTable(selection)){
+            if (room.addTable(selection)) {
                 ui.removeFromHand(selection);
             }
         }
@@ -71,16 +71,17 @@ document.addEventListener("mouseup", function (e) {
             ui.tooltipInfo.content = null;
         }
     }
+    selection = null;
 });
 
 let last = 0;
 window.speed = 1;
 window.main = function (now) {
     window.requestAnimationFrame(main);
-    if (!last || now - last >= 5 * (1000*window.speed)) {
+    if (!last || now - last >= 5 * (1000 * window.speed)) {
         last = now;
         if (pick(true, false) && !ui.atHandLimit) {
-            const tryTable = ui.hand.filter(c=> c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, false, false, false, false, false, false));
+            const tryTable = ui.hand.filter(c => c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, false, false, false, false, false, false));
             if (tryTable) {
                 ui.addToHand(new Table(pick(2, 4, 6, 8), 0, 0));
             } else {
@@ -98,6 +99,20 @@ window.main = function (now) {
     room.draw(ctx);
     ui.drawHand();
     ui.drawTooltip();
+    if (selection) {
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+        if (selection instanceof Person) {
+            ctx.translate(mousePos.x, mousePos.y);
+            ctx.scale(0.3, 0.3);
+            ctx.translate(-30, -50);
+        } else if (selection instanceof Table) {
+            selection.x = mousePos.x;
+            selection.y = mousePos.y;
+        }
+        selection.draw(ctx);
+        ctx.restore();
+    }
     // room.tables.forEach(t=>t.spaces.forEach(p => p._debug.drawn = 0))
     // ui.hand.forEach(p => p._debug && (p._debug.drawn = 0))
 };

@@ -23,7 +23,6 @@ export class Room {
     checkClickedTable(pos) {
         let tableClicked = null;
         [...this.tables].forEach(table => {
-            console.log(pos, table.rect)
             if (coordInRectangle(pos, table.dimensions)) {
                 tableClicked = table;
             }
@@ -44,7 +43,6 @@ export class Room {
 
     checkClicked(pos) {
         const clickedThing = this.checkClickedPerson(pos) || this.checkClickedTable(pos);
-        console.log(pos, clickedThing);
         return clickedThing;
     }
 

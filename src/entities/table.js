@@ -1,4 +1,4 @@
-import { coordInRectangle, circle } from '../utils/shape-utils';
+import { coordInRectangle, halfCircle, circle } from '../utils/shape-utils';
 import { Person } from './person';
 
 const cardDimensions = {
@@ -118,7 +118,7 @@ export class Table {
         ctx.restore();
     }
 
-    drawHappiness(ctx, scale) {
+    drawHappiness(ctx) {
         ctx.save();
         ctx.fillStyle = "#f1dbbb";
         ctx.strokeStyle = "#9a8472";
@@ -154,8 +154,8 @@ export class Table {
         ctx.fillStyle = colour;
         ctx.fillRect(this.unit / 2, 0, this.width - this.unit, this.height);
 
-        circle(ctx, this.unit / 2, this.height / 2, this.height / 2, null, "fill");
-        circle(ctx, this._width + this.unit / 2, this.height / 2, this.height / 2, null, "fill");
+        halfCircle(ctx, (this.unit+1) / 2, this.height / 2, this.height / 2, null, "fill", 1);
+        halfCircle(ctx, this._width + (this.unit-1) / 2, this.height / 2, this.height / 2, null, "fill", -1);
         ctx.restore();
     }
 
@@ -194,15 +194,19 @@ export class Table {
         ctx.restore();
     }
 
-    draw(ctx, scale) {
+    draw(ctx) {
         this.areas = new Map();
         ctx.translate(this._x, this.y);
-        this.drawTopRowPeople(ctx, scale);
-        this.drawTable(ctx, scale);
-        this.drawTableSeats(ctx, scale);
-        this.drawHappiness(ctx, scale);
-        this.drawBottomRowPeople(ctx, scale);
+        this.drawTopRowPeople(ctx);
+        this.drawTable(ctx);
+        this.drawTableSeats(ctx);
+        this.drawHappiness(ctx);
+        this.drawBottomRowPeople(ctx);
         ctx.translate(-this._x, -this.y);
+    }
+    
+    drawShadow(ctx) {
+        this.drawTable(ctx);
     }
 
     drawCard(ctx, pos, scale) {
@@ -216,12 +220,12 @@ export class Table {
         ctx.lineWidth = cardDimensions.border;
         ctx.strokeRect((cardDimensions.border / 2), (cardDimensions.border / 2), cardDimensions.width - cardDimensions.border, cardDimensions.height - cardDimensions.border);
 
-        ctx.translate((cardDimensions.width/2 - this.width/2), cardDimensions.height/2 - this.height/2);
-        
+        ctx.translate((cardDimensions.width / 2 - this.width / 2), cardDimensions.height / 2 - this.height / 2);
+
         const midX = this.width / 2;
         const midY = this.height / 2;
         ctx.translate(midX, midY);
-        ctx.rotate(Math.PI/2);
+        ctx.rotate(Math.PI / 2);
         ctx.translate(-midX, -midY);
 
         this.drawPositionedTable(ctx);
