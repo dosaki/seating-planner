@@ -1,4 +1,4 @@
-import { coordInRectangle } from '../utils/shape-utils';
+import { circle, coordInRectangle } from '../utils/shape-utils';
 
 const cardDimensions = {
     width: 234,
@@ -18,6 +18,7 @@ export class UI {
             y: 0,
             content: null
         };
+        this.pings = {};
     }
 
     get atHandLimit() {
@@ -92,14 +93,37 @@ export class UI {
         this.ctx.fillStyle = "#f1dbbb";
         this.ctx.strokeStyle = "#9a8472";
         this.ctx.translate(10, 10);
-        this.ctx.fillRect(0, 0, 60, 24);
-        this.ctx.strokeRect(0, 0, 60, 24);
+        this.ctx.fillRect(0, 0, 200, 24);
+        this.ctx.strokeRect(0, 0, 200, 24);
 
-        this.ctx.font = '22px monospace';
+        this.ctx.font = '20px monospace';
         this.ctx.fillStyle = "#000000";
-        this.ctx.fillText(score, 5, 20);
+        this.ctx.fillText(`Happiness: ${score}`, 5, 20);
 
         this.ctx.font = '12px monospace';
         this.ctx.restore();
+    }
+
+    ping(pos, colour, duration) {
+        this.pings[`${pos.x}|${pos.y}|${colour}`] = 3;
+        setTimeout(()=>{
+            delete this.pings[`${pos.x}|${pos.y}|${colour}`];
+        }, duration);
+    }
+
+    drawPings() {
+        Object.keys(this.pings).forEach(k=>{
+            this.ctx.save();
+            this.ctx.translate(parseInt(k.split("|")[0]), parseInt(k.split("|")[1]));
+            const colour = (255-this.pings[k]).toString(16).padStart(2,0);
+            console.log(colour);
+            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*0.1, `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*0.5, `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05), `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*1.5, `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*2, `${k.split('|')[2]}${colour}`, "stroke");
+            this.pings[k]+=1
+            this.ctx.restore();
+        });
     }
 }

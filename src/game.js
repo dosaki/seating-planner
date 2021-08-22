@@ -12,6 +12,7 @@ const ctx = canvas.getContext('2d');
 canvas.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); };
 
 const ui = new UI(ctx, canvas.width, canvas.height);
+window.ui = ui;
 const people = new Array(ui.handLimit - 1).fill(0).map(ignored => {
     const gender = pick("female", "male");
     return new Person(generateName(gender), gender).init();
@@ -23,6 +24,19 @@ const startingTable = new Table(6);
 startingTable.x = window.innerWidth / 2 - startingTable.width / 2;
 startingTable.y = window.innerHeight / 2 - startingTable.height / 2;
 room.addTable(startingTable);
+
+let lost = false;
+let loseReason = 0;
+const loseReasons = [
+    "You kept your guests waiting for too long.",
+    "You had at least two furious people at a table."
+];
+const loseTips = [
+    "Tip: Guests in your hand grow angry as time passes.",
+    "Tip: Shift guests from table to table to balance out their happiness."
+];
+let scoredSaved = false;
+let previousScore = 0;
 
 let selection = null;
 let hoveredSelection = null;
@@ -58,12 +72,14 @@ function onResizeEnd() {
 }
 
 function onMove(e) {
+    if (lost) return;
     mousePos.x = e.touches ? e.touches[0].clientX : e.clientX;
     mousePos.y = e.touches ? e.touches[0].clientY : e.clientY;
     hoveredSelection = room.checkClicked(mousePos);
 }
 
 function onPress(e) {
+    if (lost) return;
     onMove(e);
     mousePosPress.x = mousePos.x;
     mousePosPress.y = mousePos.y;
@@ -74,6 +90,7 @@ function onPress(e) {
 }
 
 function onLetGo(e) {
+    if (lost) return;
     mousePosPress.x = null;
     mousePosPress.y = null;
     if ((e.button === 0 || (!isLongTouch && e.touches)) && selection) {
@@ -99,7 +116,7 @@ function onLetGo(e) {
     if (e.button === 2 || isLongTouch) {
         const clickedThing = room.checkClicked(mousePos);
         if (clickedThing instanceof Person) {
-            ui.tooltipInfo.content = [clickedThing.name, ...clickedThing.traits.map(t => t.name)];
+            ui.tooltipInfo.content = [clickedThing.name, clickedThing.happinessName, ...clickedThing.traits.map(t => t.name)];
             ui.tooltipInfo.x = mousePos.x;
             ui.tooltipInfo.y = mousePos.y;
         }
@@ -150,19 +167,35 @@ window.main = function (now) {
     window.requestAnimationFrame(main);
     if (!last || now - last >= 5 * (1000 * window.speed)) {
         last = now;
-        room.tables.forEach(t => t.updateHappiness());
-        ui.hand.forEach(card => {
-            if(card instanceof Person){
-                card.happiness -= 3;
+        if(!lost){
+            room.tables.forEach(t => t.updateHappiness());
+            const badTable = room.tables.find(t => t.moreThanOneFurious)
+            if (badTable) {
+                ui.ping(badTable.centre, "#ff0000", 8000);
+                lost = true;
+                loseReason = 1;
             }
-        });
-        if (pick(true, false) && !ui.atHandLimit) {
-            const tryTable = ui.hand.filter(c => c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, false, false, false, false, false, false));
-            if (tryTable) {
-                ui.addToHand(new Table(pick(2, 4, 6, 8), 0, 0));
-            } else {
-                const gender = pick("female", "male");
-                ui.addToHand(new Person(generateName(gender), gender).init());
+            ui.hand.forEach(card => {
+                if (card instanceof Person) {
+                    card.happiness -= 3;
+                    if (card.happiness <= -50) {
+                        lost = true;
+                        loseReason = 0;
+                    }
+                }
+            });
+            if (pick(true, false) && !ui.atHandLimit) {
+                const tryTable = ui.hand.filter(c => c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, false, false, false, false, false, false));
+                if (tryTable) {
+                    ui.addToHand(new Table(pick(2, 4, 6, 8), 0, 0));
+                } else {
+                    const gender = pick("female", "male");
+                    ui.addToHand(new Person(generateName(gender), gender).init());
+                }
+            }
+            if(ui.atHandLimit && !room.tablesAreFull){
+                const tableWithSpaces = room.tables.find(t => !t.isFull);
+                ui.ping(tableWithSpaces.centre, "#0088ff", 2000);
             }
         }
     }
@@ -194,8 +227,37 @@ window.main = function (now) {
             hoveredSelection.spaces.forEach(p => p.personToMatch = selection);
         }
     }
+    ui.drawPings();
     // room.tables.forEach(t=>t.spaces.forEach(p => p._debug.drawn = 0))
     // ui.hand.forEach(p => p._debug && (p._debug.drawn = 0))
+
+
+    if (lost) {
+        if(!scoredSaved){
+            scoredSaved = true;
+            previousScore = parseInt(localStorage.getItem('dosaki-seating-space-planner-high-score')) || 0;
+            localStorage.setItem('dosaki-seating-space-planner-high-score', Math.max(previousScore, room.totalScore));
+        }
+        ctx.fillStyle = "#050000aa";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#ffffff";
+        const gameOverMessages = [
+            ["Your wedding reception is ruined!", 42],
+            [loseReasons[loseReason], 32],
+            ["", 5],
+            [`Happiness: ${room.totalScore}`, 44],
+            [previousScore < room.totalScore ? 'New High Score!' : `Highest: ${previousScore}`, 38],
+            ["", 10],
+            [loseTips[loseReason], 26],
+            ["", 40],
+            ["Refresh to start a new game.", 32]
+        ];
+        const totalSize = gameOverMessages.reduce((acc, m)=>acc+m[1], 0) * 0.5625;
+        gameOverMessages.forEach((message, i) => {
+            ctx.font = `${message[1]}px monospace`;
+            ctx.fillText(message[0], canvas.width / 2 - (message[0].length * message[1] * 0.5625) / 2, (canvas.height / 2 - totalSize) + (i * 40 + message[1] * 0.5625));
+        });
+    }
 };
 
 main(); // Start the cycle

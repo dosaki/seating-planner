@@ -7,7 +7,7 @@ const compatibleTraits = (trait) => {
     return Object.values(traits).filter(t => t !== trait && !t.incompatibleWith(trait) && !trait.incompatibleWith(t));
 };
 
-const happinessChangeColour = (score) => {
+const happinessColour = (score) => {
     if (score >= 20) {
         return "#1e8e3e";
     }
@@ -23,6 +23,22 @@ const happinessChangeColour = (score) => {
     return "#ad0000";
 };
 
+const happinessName = (score) => {
+    if (score >= 20) {
+        return "🟢 Ecstatic";
+    }
+    if (score >= 10) {
+        return "🟢 Happy";
+    }
+    if (score >= 0) {
+        return "🟡 Neutral";
+    }
+    if (score >= -10) {
+        return "🟠 Angry";
+    }
+    return "🔴 Furious";
+};
+
 export class Person {
     constructor(name, gender) {
         this.name = name;
@@ -36,22 +52,26 @@ export class Person {
             border: 8
         };
         this.personToMatch = null;
-        this._happiness = 9;
+        this._happiness = 10;
         // this._debug = {
         //     drawn:0
         // }
     }
 
-    set happiness (value) {
+    set happiness(value) {
         this._happiness = Math.max(Math.min(value, 50), -50);
     }
 
-    get happiness () {
+    get happiness() {
         return Math.max(Math.min(this._happiness, 50), -50);
     }
 
     get shortName() {
         return `${this.name.split(" ")[0][0]}. ${this.name.split(" ").slice(1).join(" ")}`;
+    }
+
+    get happinessName() {
+        return happinessName(this.happiness);
     }
 
     get cardInfoDimensions() {
@@ -88,6 +108,9 @@ export class Person {
             shadow.addPath(new Path2D(section.path));
         });
         ctx.filter = 'blur(4px)';
+        ctx.fillStyle = `${happinessColour(this.happiness)}70`;
+        ctx.fill(shadow);
+        ctx.filter = 'blur(4px)';
         ctx.fillStyle = "#00000060";
         ctx.fill(shadow);
         ctx.filter = "none";
@@ -103,8 +126,7 @@ export class Person {
         });
         if (this.personToMatch && this !== this.personToMatch) {
             const happinessChange = this.scorePerson(this.personToMatch);
-            console.log(this.name, happinessChange);
-            circle(ctx, Person.dimensions.width / 2 - 15, -30, 30, happinessChangeColour(happinessChange), "fill");
+            circle(ctx, Person.dimensions.width / 2 - 15, -30, 30, happinessColour(happinessChange), "fill");
         }
         ctx.restore();
         // this._debug.drawn++;
@@ -151,9 +173,9 @@ export class Person {
         const _scale = scale || { x: 1, y: 1 };
         ctx.scale(_scale.x, _scale.y);
         ctx.translate(pos.x, pos.y);
-        const gradient = ctx.createLinearGradient(0,0,0,256);
-        gradient.addColorStop(0, happinessChangeColour(this.happiness));
-        gradient.addColorStop(0.2, happinessChangeColour(this.happiness));
+        const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+        gradient.addColorStop(0, happinessColour(this.happiness));
+        gradient.addColorStop(0.2, happinessColour(this.happiness));
         gradient.addColorStop(0.9, '#f1dbbb');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, this.cardDimensions.width, this.cardDimensions.height);

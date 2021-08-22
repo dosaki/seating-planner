@@ -20,6 +20,10 @@ export class Table {
         this.unit = Person.dimensions.width * 0.25;
     }
 
+    get moreThanOneFurious() {
+        return this.spaces.filter(p => p.happiness <= -50).length > 1;
+    }
+
     get isFull() {
         return this.spaces.length === this.size;
     }
@@ -51,6 +55,14 @@ export class Table {
         };
     }
 
+    get centre() {
+        const dimensions = this.dimensions;
+        return {
+            x: dimensions.width/2 + dimensions.x,
+            y: dimensions.height/2 + dimensions.y
+        }
+    }
+
     // get rect() {
     //     return Object.values(this.dimensions);
     // }
@@ -64,7 +76,7 @@ export class Table {
     }
 
     get height() {
-        return this.unit * 2;
+        return this.unit * 2.2;
     }
 
     set x(x) {
@@ -138,7 +150,7 @@ export class Table {
         ctx.save();
         ctx.fillStyle = "#f1dbbb";
         ctx.strokeStyle = "#9a8472";
-        ctx.translate((this.width / 2) - 30, 40);
+        ctx.translate((this.width / 2) - 30, 45);
         ctx.fillRect(0, 0, 60, 24);
         ctx.strokeRect(0, 0, 60, 24);
 
@@ -157,6 +169,11 @@ export class Table {
     drawPositionedTable(ctx, scale) {
         ctx.save();
         const _scale = scale || { x: 1, y: 1 };
+        ctx.filter = 'blur(4px)';
+        ctx.translate(4, 4);
+        this._drawTableTop(ctx, _scale, "#00000060");
+        ctx.filter = 'blur(0px)';
+        ctx.translate(-4, -4);
         this._drawTableTop(ctx, _scale, "#4f402e");
         ctx.translate((this.width - this.width * 0.9) / 2, (this.height - this.height * 0.9) / 2);
         this._drawTableTop(ctx, { x: _scale.x * 0.9, y: _scale.y * 0.9 }, "#ffe5d8");
