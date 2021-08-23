@@ -2,8 +2,11 @@ import { Person } from './entities/person';
 import { Room } from './entities/room';
 import { Table } from './entities/table';
 import { UI } from './ui/ui';
+import { play } from './utils/audio-utils';
 import { generateName } from './utils/name-gen';
-import { pick } from './utils/random-utils';
+import { int, pick } from './utils/random-utils';
+
+window.play = play;
 
 const canvas = document.querySelector('[game_area]');
 canvas.width = window.innerWidth - 5;
@@ -163,13 +166,14 @@ document.addEventListener("touchcancel", () => {
 
 let last = 0;
 window.speed = 1;
-window.main = function (now) {
-    window.requestAnimationFrame(main);
-    if (!last || now - last >= 5 * (1000 * window.speed)) {
+let called = 0;
+window.main = function (t) {
+    const now = t || 0;
+    if (now - last >= 5 * (1000 * window.speed)) {
         last = now;
-        if(!lost){
+        if (!lost) {
             room.tables.forEach(t => t.updateHappiness());
-            const badTable = room.tables.find(t => t.moreThanOneFurious)
+            const badTable = room.tables.find(t => t.moreThanOneFurious);
             if (badTable) {
                 ui.ping(badTable.centre, "#ff0000", 8000);
                 lost = true;
@@ -177,7 +181,7 @@ window.main = function (now) {
             }
             ui.hand.forEach(card => {
                 if (card instanceof Person) {
-                    card.happiness -= 3;
+                    card.happiness -= card.hasTrait("impatient") ? int(3, 6) : (card.hasTrait("patient") ? int(0, 2) : int(1, 4));
                     if (card.happiness <= -50) {
                         lost = true;
                         loseReason = 0;
@@ -193,7 +197,7 @@ window.main = function (now) {
                     ui.addToHand(new Person(generateName(gender), gender).init());
                 }
             }
-            if(ui.atHandLimit && !room.tablesAreFull){
+            if (ui.atHandLimit && !room.tablesAreFull) {
                 const tableWithSpaces = room.tables.find(t => !t.isFull);
                 ui.ping(tableWithSpaces.centre, "#0088ff", 2000);
             }
@@ -233,7 +237,7 @@ window.main = function (now) {
 
 
     if (lost) {
-        if(!scoredSaved){
+        if (!scoredSaved) {
             scoredSaved = true;
             previousScore = parseInt(localStorage.getItem('dosaki-seating-space-planner-high-score')) || 0;
             localStorage.setItem('dosaki-seating-space-planner-high-score', Math.max(previousScore, room.totalScore));
@@ -252,13 +256,18 @@ window.main = function (now) {
             ["", 40],
             ["Refresh to start a new game.", 32]
         ];
-        const totalSize = gameOverMessages.reduce((acc, m)=>acc+m[1], 0) * 0.5625;
+        const totalSize = gameOverMessages.reduce((acc, m) => acc + m[1], 0) * 0.5625;
         gameOverMessages.forEach((message, i) => {
             ctx.font = `${message[1]}px monospace`;
             ctx.fillText(message[0], canvas.width / 2 - (message[0].length * message[1] * 0.5625) / 2, (canvas.height / 2 - totalSize) + (i * 40 + message[1] * 0.5625));
         });
     }
+    window.requestAnimationFrame(main);
 };
 
-main(); // Start the cycle
+window.start = () => {
+    document.querySelector('[intro]').classList.add("hidden");
+    document.querySelector('[game_area]').classList.remove("hidden");
+    main();
+};
 

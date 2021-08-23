@@ -19,12 +19,38 @@
             overflow: auto;
             position: fixed;
             display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .intro {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .highlight {
+            margin: 10px 0;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
-    <canvas game_area></canvas>
+    <div intro class="intro">
+        <div>
+            <h1 class="highlight">Seating Space Planner</h1>
+            <div>You've planned your wedding reception seating but unpredicted guests keep arriving!</div>
+            <div>You must now plan their seating space on the fly.</div>
+            <div>Drag the guest cards to the available tables, but pay attention to your their traits and don't let them get too angry with each other.</div>
+            <div class="highlight"><a starter href="javascript:start()">Let the guests in</a></div>
+        </div>
+    </div>
+    <canvas game_area class="hidden"></canvas>
     <script src="/js/game.js"></script>
 </body>
 

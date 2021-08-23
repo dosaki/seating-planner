@@ -1,3 +1,4 @@
+import { play, speak } from '../utils/audio-utils';
 import { circle, coordInRectangle } from '../utils/shape-utils';
 
 const cardDimensions = {
@@ -87,7 +88,7 @@ export class UI {
             this.ctx.restore();
         }
     }
-    
+
     drawScore(score) {
         this.ctx.save();
         this.ctx.fillStyle = "#f1dbbb";
@@ -106,23 +107,23 @@ export class UI {
 
     ping(pos, colour, duration) {
         this.pings[`${pos.x}|${pos.y}|${colour}`] = 3;
-        setTimeout(()=>{
+        play(null, null, null, 1);
+        setTimeout(() => {
             delete this.pings[`${pos.x}|${pos.y}|${colour}`];
         }, duration);
     }
 
     drawPings() {
-        Object.keys(this.pings).forEach(k=>{
+        Object.keys(this.pings).forEach(k => {
             this.ctx.save();
             this.ctx.translate(parseInt(k.split("|")[0]), parseInt(k.split("|")[1]));
-            const colour = (255-this.pings[k]).toString(16).padStart(2,0);
-            console.log(colour);
-            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*0.1, `${k.split('|')[2]}${colour}`, "stroke");
-            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*0.5, `${k.split('|')[2]}${colour}`, "stroke");
-            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05), `${k.split('|')[2]}${colour}`, "stroke");
-            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*1.5, `${k.split('|')[2]}${colour}`, "stroke");
-            circle(this.ctx, 0,0, this.pings[k]*(this.pings[k]*0.05)*2, `${k.split('|')[2]}${colour}`, "stroke");
-            this.pings[k]+=1
+            const colour = (255 - this.pings[k]).toString(16).padStart(2, 0);
+            circle(this.ctx, 0, 0, this.pings[k] * (this.pings[k] * 0.05) * 0.1, `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0, 0, this.pings[k] * (this.pings[k] * 0.05) * 0.5, `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0, 0, this.pings[k] * (this.pings[k] * 0.05), `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0, 0, this.pings[k] * (this.pings[k] * 0.05) * 1.5, `${k.split('|')[2]}${colour}`, "stroke");
+            circle(this.ctx, 0, 0, this.pings[k] * (this.pings[k] * 0.05) * 2, `${k.split('|')[2]}${colour}`, "stroke");
+            this.pings[k] += 1;
             this.ctx.restore();
         });
     }

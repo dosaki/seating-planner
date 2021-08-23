@@ -81,6 +81,10 @@ export class Person {
         };
     }
 
+    hasTrait(traitName) {
+        return !!this.traits.find(t => t.name.toLowerCase() === traitName.toLowerCase());
+    }
+
     scorePerson(person) {
         return this.traits.map(t => person.traits.map(pt => t.likes(pt) ? 10 : 0 + t.dislikes(pt) ? -10 : 0)).flat().reduce((a, b) => a + b, 0);
     }
