@@ -9,8 +9,8 @@ export const play = (type, frequency, duration, trail) => {
     if (!context) {
         context = new AudioContext();
     }
-    const _duration = isFirefox ? trail*100 : (duration || null);
     const _trail = trail || 0.1;
+    const _duration = isFirefox ? _trail*100 : (duration || null);
     const _frequency = frequency || 440.0;
 
     const gain = context.createGain();
