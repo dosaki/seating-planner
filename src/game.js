@@ -6,11 +6,11 @@ import { play } from './utils/audio-utils';
 import { generateName } from './utils/name-gen';
 import { int, pick } from './utils/random-utils';
 
-window.play = play;
-
 const canvas = document.querySelector('[game_area]');
 canvas.width = window.innerWidth - 5;
 canvas.height = window.innerHeight - 5;
+window.cWidth = window.innerWidth - 5;
+window.cHeight = window.innerHeight - 5;
 const ctx = canvas.getContext('2d');
 canvas.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); };
 
@@ -165,12 +165,12 @@ document.addEventListener("touchcancel", () => {
 });
 
 let last = 0;
+let lastPing = 0;
 window.speed = 1;
-let called = 0;
+let pinged = 0;
 window.main = function (t) {
     const now = t || 0;
     if (now - last >= 5 * (1000 * window.speed)) {
-        last = now;
         if (!lost) {
             room.tables.forEach(t => t.updateHappiness());
             const badTable = room.tables.find(t => t.moreThanOneFurious);
@@ -197,11 +197,13 @@ window.main = function (t) {
                     ui.addToHand(new Person(generateName(gender), gender).init());
                 }
             }
-            if (ui.atHandLimit && !room.tablesAreFull) {
+            if (ui.atHandLimit && !room.tablesAreFull && now - lastPing >= 15 * (1000 * window.speed)) {
                 const tableWithSpaces = room.tables.find(t => !t.isFull);
                 ui.ping(tableWithSpaces.centre, "#0088ff", 2000);
+                lastPing = now;
             }
         }
+        last = now;
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);

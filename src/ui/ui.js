@@ -107,7 +107,12 @@ export class UI {
 
     ping(pos, colour, duration) {
         this.pings[`${pos.x}|${pos.y}|${colour}`] = 3;
-        play(null, null, null, 1);
+        setTimeout(() => {
+            play(null, 50, null, 1);
+        }, 0);
+        setTimeout(() => {
+            play(null, 100, null, 1);
+        }, 300);
         setTimeout(() => {
             delete this.pings[`${pos.x}|${pos.y}|${colour}`];
         }, duration);

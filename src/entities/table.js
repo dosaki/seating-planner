@@ -9,15 +9,20 @@ const cardDimensions = {
 
 const tableCloth = "M 0,9 9,18 18,9 9,0 Z";
 
+//this is because of wall height
+const minEdge = 80;
+
 export class Table {
     constructor(size, x, y) {
         this.shape = 'rectangular';
         this.size = size;
         this.spaces = [];
-        this._x = x;
-        this.y = y;
-        this.areas = new Map();
         this.unit = Person.dimensions.width * 0.25;
+        this.maxX = window.cWidth - 80;
+        this.maxY = window.cHeight - 100;
+        this._x = Math.min(this.maxX - ((this.unit * (this.size / 2)) - this.unit), Math.max(minEdge, x));
+        this._y = Math.min(this.maxY - (this.unit * 2.2), Math.max(minEdge, y));
+        this.areas = new Map();
     }
 
     get moreThanOneFurious() {
@@ -35,7 +40,7 @@ export class Table {
     get happiness() {
         return this.spaces.reduce((acc, person) => {
             return acc + person.happiness;
-        },0);
+        }, 0);
     }
 
     get totalHappiness() {
@@ -58,9 +63,9 @@ export class Table {
     get centre() {
         const dimensions = this.dimensions;
         return {
-            x: dimensions.width/2 + dimensions.x,
-            y: dimensions.height/2 + dimensions.y
-        }
+            x: dimensions.width / 2 + dimensions.x,
+            y: dimensions.height / 2 + dimensions.y
+        };
     }
 
     // get rect() {
@@ -80,11 +85,19 @@ export class Table {
     }
 
     set x(x) {
-        this._x = x;
+        this._x = Math.min(this.maxX - this.width, Math.max(minEdge, x));
     }
 
     get x() {
         return - this.unit / 2;
+    }
+
+    set y(y) {
+        this._y = Math.min(this.maxY - this.height, Math.max(minEdge, y));
+    }
+
+    get y() {
+        return this._y;
     }
 
     add(person) {
@@ -104,7 +117,7 @@ export class Table {
         let personCardClicked = null;
         [...this.areas.keys()].forEach(person => {
             const area = this.areas.get(person);
-            if (coordInRectangle({x:pos.x, y:pos.y}, {x:area.x, y: area.y, width:area.width, height: area.height})) {
+            if (coordInRectangle({ x: pos.x, y: pos.y }, { x: area.x, y: area.y, width: area.width, height: area.height })) {
                 personCardClicked = person;
             }
         });
@@ -187,8 +200,8 @@ export class Table {
         ctx.fillStyle = colour;
         ctx.fillRect(this.unit / 2, 0, this.width - this.unit, this.height);
 
-        halfCircle(ctx, (this.unit+1) / 2, this.height / 2, this.height / 2, null, "fill", 1);
-        halfCircle(ctx, this._width + (this.unit-1) / 2, this.height / 2, this.height / 2, null, "fill", -1);
+        halfCircle(ctx, (this.unit + 1) / 2, this.height / 2, this.height / 2, null, "fill", 1);
+        halfCircle(ctx, this._width + (this.unit - 1) / 2, this.height / 2, this.height / 2, null, "fill", -1);
         ctx.restore();
     }
 
@@ -237,7 +250,7 @@ export class Table {
         this.drawBottomRowPeople(ctx);
         ctx.translate(-this._x, -this.y);
     }
-    
+
     drawShadow(ctx) {
         this.drawTable(ctx);
     }

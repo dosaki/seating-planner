@@ -14,14 +14,12 @@ export class Room {
         return this.tables.reduce((acc, table) => acc + table.happiness, 0);
     }
 
-    addTable(sizeOrTable, pos) {
+    addTable(sizeOrTable) {
         if (sizeOrTable instanceof Table) {
             this.tables.push(sizeOrTable);
-        } else {
-            this.tables.push(new Table(sizeOrTable, pos.x, pos.y));
+            this.tables = [...new Set(this.tables)];
+            return true;
         }
-        this.tables = [...new Set(this.tables)];
-        return true;
     }
 
     checkClickedTable(pos) {
@@ -50,51 +48,95 @@ export class Room {
     }
 
     drawFloorSection(ctx) {
-        ctx.fillStyle = "#865f3e";
-        ctx.fillRect(0, 0, 50, 15);
-        ctx.fillStyle = "#b18e68";
-        ctx.fillRect(50, 0, 50, 15);
-        ctx.fillRect(150, 0, 50, 15);
-        ctx.fillRect(25, 15, 50, 15);
-        ctx.fillRect(75, 15, 50, 15);
-        ctx.fillStyle = "#3e250e";
-        ctx.fillRect(125, 15, 50, 15);
-        ctx.fillStyle = "#d0b391";
-        ctx.fillRect(100, 0, 50, 15);
-        ctx.fillRect(175, 15, 30, 15);
-        ctx.fillRect(-5, 15, 30, 15);
+        ctx.fillStyle = "#f3f0e9";
+        ctx.beginPath();
+        ctx.moveTo(45, 45);
+        ctx.arcTo(5, 45, 5, 5, 10);
+        ctx.arcTo(5, 5, 45, 5, 10);
+        ctx.arcTo(45, 5, 45, 45, 10);
+        ctx.arcTo(45, 45, 5, 45, 10);
+        ctx.fill();
+        ctx.fillStyle = "#fffaf4";
+        ctx.beginPath();
+        ctx.moveTo(25, 10);
+        ctx.quadraticCurveTo(25, 25, 40, 25);
+        ctx.quadraticCurveTo(25, 25, 25, 40);
+        ctx.quadraticCurveTo(25, 25, 10, 25);
+        ctx.quadraticCurveTo(25, 25, 25, 10);
+        ctx.fill();
 
-        ctx.strokeStyle = "#00000060";
-        ctx.strokeRect(0, 0, 50, 15);
-        ctx.strokeRect(50, 0, 50, 15);
-        ctx.strokeRect(150, 0, 50, 15);
-        ctx.strokeRect(25, 15, 50, 15);
-        ctx.strokeRect(75, 15, 50, 15);
-        ctx.strokeRect(125, 15, 50, 15);
-        ctx.strokeRect(100, 0, 50, 15);
+        // Wooden floorboards
+        // ctx.fillStyle = "#865f3e";
+        // ctx.fillRect(0, 0, 50, 15);
+        // ctx.fillStyle = "#b18e68";
+        // ctx.fillRect(50, 0, 50, 15);
+        // ctx.fillRect(150, 0, 50, 15);
+        // ctx.fillRect(25, 15, 50, 15);
+        // ctx.fillRect(75, 15, 50, 15);
+        // ctx.fillStyle = "#3e250e";
+        // ctx.fillRect(125, 15, 50, 15);
+        // ctx.fillStyle = "#d0b391";
+        // ctx.fillRect(100, 0, 50, 15);
+        // ctx.fillRect(175, 15, 30, 15);
+        // ctx.fillRect(-5, 15, 30, 15);
+
+        // ctx.strokeStyle = "#00000060";
+        // ctx.strokeRect(0, 0, 50, 15);
+        // ctx.strokeRect(50, 0, 50, 15);
+        // ctx.strokeRect(150, 0, 50, 15);
+        // ctx.strokeRect(25, 15, 50, 15);
+        // ctx.strokeRect(75, 15, 50, 15);
+        // ctx.strokeRect(125, 15, 50, 15);
+        // ctx.strokeRect(100, 0, 50, 15);
     }
 
     drawFloor(ctx) {
         ctx.save();
-        const horizontal = ctx.canvas.width / 200;
-        const vertical = ctx.canvas.height / 30;
+        const width = 50;
+        const height = 50;
+        const horizontal = ctx.canvas.width / width;
+        const vertical = (ctx.canvas.height) / height;
+        ctx.fillStyle = "#e3e0d9";
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.translate(50, 50);
         for (let y = 0; y < vertical; y++) {
             let xTranslated = 0;
             for (let x = 0; x < horizontal; x++) {
                 this.drawFloorSection(ctx);
-                xTranslated += 200;
-                ctx.translate(200, 0);
+                xTranslated += width;
+                ctx.translate(width, 0);
             }
             ctx.translate(-xTranslated, 0);
-            ctx.stroke(new Path2D(`M 0,15 h ${ctx.canvas.width}`));
-            ctx.stroke(new Path2D(`M 0,30 h ${ctx.canvas.width}`));
-            ctx.translate(0, 30);
+            ctx.translate(0, height);
         }
         ctx.restore();
     }
 
     drawWalls(ctx) {
-
+        ctx.save();
+        ctx.strokeStyle = "#d5d5d5";
+        ctx.lineWidth = 100;
+        ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.strokeStyle = "#847766";
+        ctx.lineWidth = 25;
+        ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.strokeStyle = "#847766";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(50, 50, ctx.canvas.width - 100, ctx.canvas.height - 100);
+        ctx.lineWidth = 1;
+        ctx.moveTo(0, 0);
+        ctx.lineTo(50, 50);
+        ctx.stroke();
+        ctx.moveTo(ctx.canvas.width, 0);
+        ctx.lineTo(ctx.canvas.width - 50, 50);
+        ctx.stroke();
+        ctx.moveTo(ctx.canvas.width, ctx.canvas.height);
+        ctx.lineTo(ctx.canvas.width - 50, ctx.canvas.height - 50);
+        ctx.stroke();
+        ctx.moveTo(0, ctx.canvas.height);
+        ctx.lineTo(50, ctx.canvas.height - 50);
+        ctx.stroke();
+        ctx.restore();
     }
 
     drawLights(ctx) {
@@ -107,7 +149,7 @@ export class Room {
 
     _drawLights(ctx) {
         ctx.save();
-        
+
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(ctx.canvas.width, 0);
@@ -140,9 +182,8 @@ export class Room {
     draw(ctx) {
         this.drawFloor(ctx);
         this.drawWalls(ctx);
+        // this.drawDoor(ctx);
         this.tables.forEach(t => t.draw(ctx));
-        // ctx.fillStyle = "#00000060";
-        // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         this.drawLights(ctx);
     }
 }
