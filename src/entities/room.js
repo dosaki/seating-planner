@@ -118,36 +118,207 @@ export class Room {
         ctx.lineWidth = 100;
         ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.strokeStyle = "#847766";
-        ctx.lineWidth = 25;
+        ctx.lineWidth = 30;
         ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.strokeStyle = "#847766";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.strokeRect(50, 50, ctx.canvas.width - 100, ctx.canvas.height - 100);
         ctx.lineWidth = 1;
+        ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(50, 50);
         ctx.stroke();
+        ctx.beginPath();
         ctx.moveTo(ctx.canvas.width, 0);
         ctx.lineTo(ctx.canvas.width - 50, 50);
         ctx.stroke();
+        ctx.beginPath();
         ctx.moveTo(ctx.canvas.width, ctx.canvas.height);
         ctx.lineTo(ctx.canvas.width - 50, ctx.canvas.height - 50);
         ctx.stroke();
+        ctx.beginPath();
         ctx.moveTo(0, ctx.canvas.height);
         ctx.lineTo(50, ctx.canvas.height - 50);
         ctx.stroke();
         ctx.restore();
     }
 
-    drawLights(ctx) {
+    drawDoor(ctx) {
         ctx.save();
-        this._drawLights(ctx);
-        ctx.translate(0, ctx.canvas.height / 2 - 0.5);
-        this._drawLights(ctx);
+        ctx.translate(0, ctx.canvas.height / 2 - 100);
+
+        // Door
+        ctx.beginPath();
+        ctx.moveTo(5, 0);
+        ctx.lineTo(40, 50);
+        ctx.lineTo(40, 150);
+        ctx.lineTo(5, 200);
+        ctx.fillStyle = "#90641f";
+        ctx.fill();
+        
+        // Door details
+        ctx.beginPath();
+        ctx.moveTo(10, 15);
+        ctx.lineTo(35, 50);
+        ctx.lineTo(35, 150);
+        ctx.lineTo(10, 185);
+        ctx.fillStyle = "#fffaf4";
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.moveTo(5, 93);
+        ctx.lineTo(50, 95);
+        ctx.lineTo(50, 105);
+        ctx.lineTo(5, 108);
+        ctx.fillStyle = "#90641f";
+        ctx.fill();
+        // Wall Top
+        ctx.beginPath();
+        ctx.moveTo(5, 0);
+        ctx.lineTo(15, 0);
+        ctx.lineTo(51, 50);
+        ctx.lineTo(40, 50);
+        ctx.fillStyle = "#c5c5c5";
+        ctx.fill();
+
+        // Wall Bottom
+        ctx.beginPath();
+        ctx.moveTo(51, 150);
+        ctx.lineTo(40, 150);
+        ctx.lineTo(5, 200);
+        ctx.lineTo(15, 200);
+        ctx.fillStyle = "#f5f5f5";
+        ctx.fill();
+
+        // Floor
+        ctx.fillStyle = "#e3e0d9";
+        ctx.fillRect(40, 50, 11, 100);
+
+        // Footer Top
+        ctx.beginPath();
+        ctx.moveTo(51, 150);
+        ctx.lineTo(40, 150);
+        ctx.strokeStyle = "#847766";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Footer Bottom
+        ctx.beginPath();
+        ctx.moveTo(51, 50);
+        ctx.lineTo(40, 50);
+        ctx.stroke();        
+
+        ctx.restore();
+    }
+    
+    drawWindow(ctx) {
+        ctx.save();
+        
+        // Window
+        ctx.beginPath();
+        ctx.moveTo(50, 5);
+        ctx.lineTo(ctx.canvas.width - 50, 5);
+        ctx.lineTo(ctx.canvas.width - 75, 40);
+        ctx.lineTo(75, 40);
+        ctx.fillStyle = "#e0f9fe";
+        ctx.fill();
+        
+        // Wall Left
+        ctx.beginPath();
+        ctx.moveTo(50, 5);
+        ctx.lineTo(75, 40);
+        ctx.lineTo(75, 51);
+        ctx.lineTo(50, 16);
+        ctx.fillStyle = "#f5f5f5";
+        ctx.fill();
+        
+        // Wall Right
+        ctx.beginPath();
+        ctx.moveTo(ctx.canvas.width - 50, 5);
+        ctx.lineTo(ctx.canvas.width - 75, 40);
+        ctx.lineTo(ctx.canvas.width - 75, 51);
+        ctx.lineTo(ctx.canvas.width - 50, 16);
+        ctx.fillStyle = "#f5f5f5";
+        ctx.fill();
+        
+        // Footer Left
+        ctx.beginPath();
+        ctx.moveTo(75, 40);
+        ctx.lineTo(75, 51);
+        ctx.strokeStyle = "#847766";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Footer Right
+        ctx.beginPath();
+        ctx.moveTo(ctx.canvas.width - 75, 40);
+        ctx.lineTo(ctx.canvas.width - 75, 51);
+        ctx.stroke();    
+        
+        // Floor
+        ctx.fillStyle = "#e3e0d9";
+        ctx.fillRect(75, 40, ctx.canvas.width - 150, 11);
+
         ctx.restore();
     }
 
-    _drawLights(ctx) {
+    drawLighting(ctx) {
+        ctx.save();
+        this._drawWindowShadows(ctx);
+        this._drawLights(ctx, '#ffff8810', '#00000000');
+        ctx.translate(0, ctx.canvas.height / 2);
+        this._drawShadow(ctx);
+        this._drawLights(ctx, '#fff70010', '#00000030');
+        ctx.restore();
+    }
+
+    _drawLights(ctx, lightColour, outerColour) {
+        ctx.save();
+        ctx.translate((ctx.canvas.width - ctx.canvas.height * 2) / 4, 0);
+        ctx.translate(-(5 + ctx.canvas.height / 4), ctx.canvas.height / 4);
+        for (let i = 0; i < 4; i++) {
+            ctx.translate((5 + ctx.canvas.height / 2), 0);
+            const gradient = ctx.createRadialGradient(0, 0, Math.max(5, ctx.canvas.height / 4 - 100), 0, 0, ctx.canvas.height / 4);
+            gradient.addColorStop(0, lightColour);
+            gradient.addColorStop(.7, outerColour);
+            gradient.addColorStop(1, outerColour);
+            circle(ctx, 0, 0, ctx.canvas.height / 4, gradient, "fill");
+        }
+        ctx.restore();
+    }
+
+    _drawWindowShadows(ctx) {
+        // Main shadow
+        const gradient = ctx.createLinearGradient(0, ctx.canvas.height / 2 - 300, 0, ctx.canvas.height / 2);
+        gradient.addColorStop(0, "#ddddff10");
+        gradient.addColorStop(1, "#00000030");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, ctx.canvas.height / 2 - 300, ctx.canvas.width, 300);
+        
+        const triangleGradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height / 2);
+        triangleGradient.addColorStop(0, "#00000030");
+        triangleGradient.addColorStop(0.5, "#00000000");
+        triangleGradient.addColorStop(1, "#00000000");
+        ctx.fillStyle = triangleGradient;
+        // Left triangle shadow
+        ctx.moveTo(0, 0);
+        ctx.lineTo(50, 0);
+        ctx.lineTo(50, 15);
+        ctx.lineTo(75, 51);
+        ctx.lineTo(51, ctx.canvas.height / 2);
+        ctx.lineTo(0, ctx.canvas.height / 2);
+        ctx.fill();
+        // Right triangle shadow
+        ctx.moveTo(ctx.canvas.width, 0);
+        ctx.lineTo(ctx.canvas.width-50, 0);
+        ctx.lineTo(ctx.canvas.width-50, 15);
+        ctx.lineTo(ctx.canvas.width-75, 51);
+        ctx.lineTo(ctx.canvas.width-51, ctx.canvas.height / 2);
+        ctx.lineTo(ctx.canvas.width, ctx.canvas.height / 2);
+        ctx.fill();
+    }
+
+    _drawShadow(ctx) {
         ctx.save();
 
         ctx.beginPath();
@@ -166,24 +337,15 @@ export class Room {
         ctx.fillStyle = "#00000030";
         ctx.fill('evenodd');
 
-        ctx.translate(-(5 + ctx.canvas.height / 4), ctx.canvas.height / 4);
-        for (let i = 0; i < 4; i++) {
-            ctx.translate((5 + ctx.canvas.height / 2), 0);
-            const gradient = ctx.createRadialGradient(0, 0, Math.max(5, ctx.canvas.height / 4 - 100), 0, 0, ctx.canvas.height / 4);
-            gradient.addColorStop(0, '#fff70010');
-            gradient.addColorStop(.7, '#00000030');
-            gradient.addColorStop(1, '#00000030');
-            circle(ctx, 0, 0, ctx.canvas.height / 4, gradient, "fill");
-        }
-
         ctx.restore();
     }
 
     draw(ctx) {
         this.drawFloor(ctx);
         this.drawWalls(ctx);
-        // this.drawDoor(ctx);
+        this.drawDoor(ctx);
+        this.drawWindow(ctx);
         this.tables.forEach(t => t.draw(ctx));
-        this.drawLights(ctx);
+        this.drawLighting(ctx);
     }
 }
