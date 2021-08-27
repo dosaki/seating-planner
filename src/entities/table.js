@@ -18,10 +18,8 @@ export class Table {
         this.size = size;
         this.spaces = [];
         this.unit = Person.dimensions.width * 0.25;
-        this.maxX = window.cWidth - 80;
-        this.maxY = window.cHeight - 100;
-        this._x = Math.min(this.maxX - ((this.unit * (this.size / 2)) - this.unit), Math.max(minEdge, x));
-        this._y = Math.min(this.maxY - (this.unit * 2.2), Math.max(minEdge, y));
+        this._x = Math.min((window.cWidth - 80) - ((this.unit * (this.size / 2)) - this.unit), Math.max(minEdge, x));
+        this._y = Math.min((window.cHeight - 100) - (this.unit * 2.2), Math.max(minEdge, y));
         this.areas = new Map();
     }
 
@@ -85,7 +83,7 @@ export class Table {
     }
 
     set x(x) {
-        this._x = Math.min(this.maxX - this.width, Math.max(minEdge, x));
+        this._x = Math.min((window.cWidth - 80) - this.width, Math.max(minEdge, x));
     }
 
     get x() {
@@ -93,7 +91,7 @@ export class Table {
     }
 
     set y(y) {
-        this._y = Math.min(this.maxY - this.height, Math.max(minEdge, y));
+        this._y = Math.min((window.cHeight - 100) - this.height, Math.max(minEdge, y));
     }
 
     get y() {
