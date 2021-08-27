@@ -71,6 +71,8 @@ function onResizeEnd() {
         canvas.height = window.innerHeight - 5;
         ui.width = window.innerWidth - 5;
         ui.height = window.innerHeight - 5;
+        window.cWidth = window.innerWidth - 5;
+        window.cHeight = window.innerHeight - 5;
     }
 }
 
