@@ -88,31 +88,29 @@ export class Track {
 }
 
 export class DynamicTrack {
-    constructor(notePool, type, tempo, volume, toneLengths) {
+    constructor(notePool, type, tempo, volume) {
         this.type = type;
         this.tempo = tempo || 1;
         this.volume = volume;
         this.notePool = notePool;
         this.lastTime = 0;
-        this.toneLengths = toneLengths;
         this.toneLength = 0;
-        this.playedSemiTone = false;
+        this.noteIndex = 0;
     }
 
     playNextNote(time, msPerBeat) {
         if ((time - this.lastTime) >= (msPerBeat * this.tempo)) {
-            const noteIndex = int(0, 7);
-            if (this.playedSemiTone) {
-                Note.create(this.notePool[noteIndex][0], this.notePool[noteIndex][1], this.toneLengths[this.toneLength])
-                    .play(this.type, this.volume);
-                this.toneLength++;
-                if (this.toneLength >= this.toneLengths.length) {
-                    this.toneLength = 0;
-                }
-                this.playedSemiTone = this.toneLengths[this.toneLength] === 1;
-            } else {
-                this.playedSemiTone = true;
+            let nextIndex = this.noteIndex+1;
+            if (nextIndex >= this.notePool.length) {
+                nextIndex = 0;
             }
+            const noteToPlay = pick(...this.notePool[this.noteIndex]);
+            const length = this.notePool[nextIndex].includes(null) ? 1 : 2;
+            if (noteToPlay) {
+                Note.create(noteToPlay[0], noteToPlay[1], length)
+                    .play(this.type, this.volume);
+            }
+            this.noteIndex = nextIndex;
             this.lastTime = time;
         }
     }

@@ -182,16 +182,31 @@ const bassTrack = new Track([
 
 
 const melodyTrack = new DynamicTrack([
-    ["sol#", 4],
-    ["la#", 4],
-    ["si", 4],
-    ["do#", 5],
-    ["re#", 5],
-    ["mi", 5],
-    ["fa#", 5],
-    ["sol#", 5],
-], "sine", 0.5, 0.1,
-    [2, 2, 1, 2, 2, 2, 1]);
+    [["re#", 4], ["fa#", 4], ["la#",4]],
+    [["re#", 4], ["fa#", 4], ["la#",4]],
+    [["re#", 4], ["fa#", 4], ["la#",4]],
+    [["re#", 4], ["fa#", 4], ["la#",4]],
+    [["re#", 4], ["fa#", 4], ["la#",4], null, null, null],
+    [["re#", 4], ["fa#", 4], ["la#",4], null, null, null],
+    [["mi", 4], ["sol#", 4], ["si", 4]],
+    [["mi", 4], ["sol#", 4], ["si", 4]],
+    [["mi", 4], ["sol#", 4], ["si", 4]],
+    [["mi", 4], ["sol#", 4], ["si", 4]],
+    [["mi", 4], ["sol#", 4], ["si", 4], null, null, null],
+    [["mi", 4], ["sol#", 4], ["si", 4], null, null, null],
+    [["fa#", 4], ["la#", 4], ["do#", 5]],
+    [["fa#", 4], ["la#", 4], ["do#", 5]],
+    [["fa#", 4], ["la#", 4], ["do#", 5]],
+    [["fa#", 4], ["la#", 4], ["do#", 5]],
+    [["fa#", 4], ["la#", 4], ["do#", 5], null, null, null],
+    [["fa#", 4], ["la#", 4], ["do#", 5], null, null, null],
+    [["do#", 4], ["mi", 4], ["sol#", 5]],
+    [["do#", 4], ["mi", 4], ["sol#", 5]],
+    [["do#", 4], ["mi", 4], ["sol#", 5]],
+    [["do#", 4], ["mi", 4], ["sol#", 5]],
+    [["do#", 4], ["mi", 4], ["sol#", 5], null, null, null],
+    [["do#", 4], ["mi", 4], ["sol#", 5], null, null, null],
+], "sine", 0.5, 0.1);
 
 const accompaniamentTracks = [
     new Track([
