@@ -108,6 +108,8 @@ export class DynamicTrack {
             const length = this.notePool[nextIndex].includes(null) ? 1 : 2;
             if (noteToPlay) {
                 Note.create(noteToPlay[0], noteToPlay[1], length)
+                    .play("triangle", this.volume);
+                Note.create(noteToPlay[0], noteToPlay[1], length)
                     .play(this.type, this.volume);
             }
             this.noteIndex = nextIndex;

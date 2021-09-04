@@ -33,9 +33,11 @@ if [[ "${IS_DIST}" == "TRUE" ]]; then
   mkdir ./dist
   7z a -r ./dist/seating-planner.zip ./app/* -xr!*.map
   size=`du -b ./dist/seating-planner.zip | awk '{print $1}'`
-  if [[ $((size - 13312)) -gt 0 ]]; then
-    echo -e "\e[93m\e[1m[WARNING] TOO BIG! File size is ${size}.\e[39m"
+  size_diff=$((size - 13312))
+  if [[ ${size_diff} -gt 0 ]]; then
+    echo -e "\e[93m\e[1m[WARNING] TOO BIG! File size is ${size} (${size_diff} over).\e[39m"
   else
-    echo -e "\e[92m\e[1m[SUCCESS] File size under 13k: ${size}.\e[39m"
+  size_left=$((size_diff*-1))
+    echo -e "\e[92m\e[1m[SUCCESS] File size under 13k: ${size} (${size_left} left).\e[39m"
   fi
 fi
