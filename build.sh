@@ -27,6 +27,7 @@ else
 fi
 
 cp -r ./static/* ./app/
+cat ./static/index.html | tr '\n' ' ' | sed 's/  //g' > ./app/index.html
 
 if [[ "${IS_DIST}" == "TRUE" ]]; then
   rm -r ./dist

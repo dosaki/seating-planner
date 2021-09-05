@@ -1,11 +1,15 @@
-import { play, speak } from '../utils/audio-utils';
+import { play } from '../utils/audio-utils';
 import { circle, coordInRectangle } from '../utils/shape-utils';
+import { UIAction } from './ui-action';
 
 const cardDimensions = {
     width: 234,
     height: 380,
     border: 8
 };
+
+const speedIcons = ["🞂", "🞂🞂", "🞂🞂🞂"];
+const speedOffsets = [2, -1, -6];
 export class UI {
     constructor(ctx, width, height) {
         this.ctx = ctx;
@@ -20,6 +24,11 @@ export class UI {
             content: null
         };
         this.pings = {};
+        this.options = {
+            playMusic: true,
+            speechSound: true,
+            pingSound: true
+        };
     }
 
     get atHandLimit() {
@@ -44,8 +53,11 @@ export class UI {
         return personCardClicked;
     }
 
-    drawHand() {
+    resetDetectionAreas() {
         this.areas = new Map();
+    }
+
+    drawHand() {
         const adjustment = this.hand.length % 2 === 0 ? (this.hand.length / 2) - 0.5 : Math.floor(this.hand.length / 2);
         this.ctx.save();
         this.hand.forEach((p, i) => {
@@ -105,14 +117,87 @@ export class UI {
         this.ctx.restore();
     }
 
+    drawOption(text, crossout, textXAdjust, textYAdjust) {
+        this.ctx.save();
+        this.ctx.fillStyle = "#f1dbbb";
+        this.ctx.strokeStyle = "#9a8472";
+        this.ctx.fillRect(0, 0, 30, 30);
+        this.ctx.strokeRect(0, 0, 30, 30);
+
+        this.ctx.font = '16px monospace';
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillText(text, 8 + (textXAdjust || 0), 21 + (textYAdjust || 0));
+
+        if (crossout) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(25, 5);
+            this.ctx.lineTo(5, 25);
+            this.lineWidth = 2;
+            this.ctx.strokeStyle = "#f1dbbb";
+            this.ctx.stroke();
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(25, 5);
+            this.ctx.lineTo(5, 25);
+            this.lineWidth = 1;
+            this.ctx.strokeStyle = "#000000";
+            this.ctx.stroke();
+        }
+        this.ctx.restore();
+    }
+
+    drawOptions() {
+        this.ctx.save();
+        this.ctx.translate(10, 50);
+        this.drawOption("♫", !this.options.playMusic, 1);
+        this.areas.set(new UIAction(() => {
+            this.options.playMusic = !this.options.playMusic;
+            play("triangle", 150, null, 0.08, 0.3);
+        }), { x: 10, y: 50, width: 32, height: 32 });
+        this.ctx.translate(35, 0);
+        this.drawOption("🗪", !this.options.speechSound, -2);
+        this.areas.set(new UIAction(() => {
+            this.options.speechSound = !this.options.speechSound;
+            window.speechSound = this.options.speechSound;
+            play("triangle", 150, null, 0.08, 0.3);
+        }), { x: 45, y: 50, width: 32, height: 32 });
+        this.ctx.translate(35, 0);
+        this.drawOption("⊚", !this.options.pingSound, -1, -2);
+        this.areas.set(new UIAction(() => {
+            this.options.pingSound = !this.options.pingSound;
+            play("triangle", 150, null, 0.08, 0.3);
+        }), { x: 80, y: 50, width: 32, height: 32 });
+
+        this.ctx.translate(60, 0);
+        this.drawOption(speedIcons[window.speed-1], null, speedOffsets[window.speed-1], 0);
+        this.areas.set(new UIAction(() => {
+            window.speed++;
+            if(window.speed >= 4){
+                window.speed = 1;
+            }
+            setTimeout(() => {
+                play("triangle", 100, null, 0.2, 0.5);
+            }, 0/window.speed);
+            setTimeout(() => {
+                play("triangle", 150, null, 0.2, 0.5);
+            }, 200/window.speed);
+            setTimeout(() => {
+                play("triangle", 200, null, 0.2, 0.5);
+            }, 400/window.speed);
+        }), { x: 140, y: 50, width: 32, height: 32 });
+        this.ctx.restore();
+    }
+
     ping(pos, colour, duration) {
         this.pings[`${pos.x}|${pos.y}|${colour}`] = 3;
-        setTimeout(() => {
-            play(null, 50, null, 1);
-        }, 0);
-        setTimeout(() => {
-            play(null, 100, null, 1);
-        }, 300);
+        if (this.options.pingSound) {
+            setTimeout(() => {
+                play(null, 50, null, 1, 0.5);
+            }, 0);
+            setTimeout(() => {
+                play(null, 100, null, 1, 0.5);
+            }, 300);
+        }
         setTimeout(() => {
             delete this.pings[`${pos.x}|${pos.y}|${colour}`];
         }, duration);

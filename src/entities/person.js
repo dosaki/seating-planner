@@ -2,6 +2,7 @@ import * as traits from './traits';
 import { pick } from '../utils/random-utils';
 import { makePortrait } from '../helpers/portrait-generator';
 import { circle } from '../utils/shape-utils';
+import { speak } from '../utils/audio-utils';
 
 const compatibleTraits = (trait) => {
     return Object.values(traits).filter(t => t !== trait && !t.incompatibleWith(trait) && !trait.incompatibleWith(t));
@@ -39,6 +40,8 @@ const happinessName = (score) => {
     return "🔴 Furious";
 };
 
+const changeTypeColour = ["#ad0000", "#1e8e3e"];
+
 export class Person {
     constructor(name, gender) {
         this.name = name;
@@ -53,13 +56,24 @@ export class Person {
         };
         this.personToMatch = null;
         this._happiness = 10;
+        this.showHappinessChange = false;
+        this.changeType = 0;
+        this.speechBubbleScale = 1;
         // this._debug = {
         //     drawn:0
         // }
     }
 
     set happiness(value) {
+        this.changeType = this._happiness > value ? 0 : 1;
+        this.showHappinessChange = this._happiness !== value; //only show if there's an actual change (i.e. non-zero change)
         this._happiness = Math.max(Math.min(value, 50), -50);
+        if (this.showHappinessChange && window.speechSound) {
+            speak(4, this.gender, "triangle", this.changeType ? "calm" : "exclamation");
+        }
+        setTimeout(() => {
+            this.showHappinessChange = false;
+        }, 900);
     }
 
     get happiness() {
@@ -101,7 +115,40 @@ export class Person {
         return this;
     }
 
-    draw(ctx, scale) {
+    drawSpeechBubble(ctx, colour) {
+        ctx.translate(0, 40);
+        ctx.fillStyle = colour;
+        //bubble
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 75, 50, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        //indicator
+        ctx.beginPath();
+        ctx.moveTo(25, 40);
+        ctx.lineTo(50, 75);
+        ctx.lineTo(50, 25);
+        ctx.fill();
+    }
+
+    drawSpikySpeechBubble(ctx, colour) {
+        ctx.save();
+        this.drawSpeechBubble(ctx, colour);
+        //spikes
+        for (let i = 0; i < 16; i++) {
+            ctx.save();
+            ctx.translate(Math.cos(i * Math.PI / 8) * (90 / 2), Math.sin(i * Math.PI / 8) * (50 / 2));
+            ctx.rotate(i * Math.PI / 8);
+            ctx.beginPath();
+            ctx.moveTo(20, -15);
+            ctx.lineTo(20, 15);
+            ctx.lineTo(35, 0);
+            ctx.fill();
+            ctx.restore();
+        }
+        ctx.restore();
+    }
+
+    draw(ctx, scale, skipChanges) {
         const _scale = scale || { x: 1, y: 1 };
         ctx.save();
         ctx.translate(16, -6);
@@ -128,9 +175,18 @@ export class Person {
             ctx.fillStyle = section.colour;
             ctx.fill(path);
         });
-        if (this.personToMatch && this !== this.personToMatch) {
-            const happinessChange = this.scorePerson(this.personToMatch);
-            circle(ctx, Person.dimensions.width / 2 - 15, -30, 30, happinessColour(happinessChange), "fill");
+        if (!skipChanges) {
+            if (this.personToMatch && this !== this.personToMatch) {
+                const happinessChange = this.scorePerson(this.personToMatch);
+                circle(ctx, Person.dimensions.width / 2 - 15, 0, 30, happinessColour(happinessChange), "fill");
+            }
+            if (this.showHappinessChange) {
+                if (!this.changeType) {
+                    this.drawSpikySpeechBubble(ctx, changeTypeColour[this.changeType]);
+                } else {
+                    this.drawSpeechBubble(ctx, changeTypeColour[this.changeType]);
+                }
+            }
         }
         ctx.restore();
         // this._debug.drawn++;
@@ -184,7 +240,7 @@ export class Person {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, this.cardDimensions.width, this.cardDimensions.height);
 
-        this.draw(ctx);
+        this.draw(ctx, null, true);
         this.drawTraitBox(ctx);
         this.drawNameBox(ctx);
 

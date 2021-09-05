@@ -30,34 +30,54 @@ export const play = (type, frequency, duration, trail, initialVolume) => {
     }
 };
 
-const noteFrequencies = {
-    "do": 16.35,
-    "do#": 17.32,
-    "re": 18.35,
-    "re#": 19.45,
-    "mi": 20.60,
-    "fa": 21.83,
-    "fa#": 23.12,
-    "sol": 24.5,
-    "sol#": 25.96,
-    "la": 27.5,
-    "la#": 29.14,
-    "si": 30.87,
+const genderFrequencyMultiplier = {
+    "male": 0.85,
+    "female": 2.2
 };
+
+const sentenceTypes = {
+    "exclamation": { start: [], ending: [125, 150, 175, 1, 1], rate: 0.9 },
+    "calm": { start: [], ending: [1, 1], rate: 1.2 },
+};
+
+export const speak = (length, gender, wave, type, destination) => {
+    const sentenceProperties = sentenceTypes[type.toLowerCase()] || senteceTypes["normal"];
+    const sequence = [...sentenceProperties.start.map(f => f * int(0.8, 1.3)), ...new Array(Math.max(length - sentenceProperties.ending.length, 0)).fill(0).map(_ => int(80, 200)), ...sentenceProperties.ending.map(f => f * int(0.8, 1))];
+    sequence.forEach((freq, i) => {
+        setTimeout(() => {
+            if (destination) {
+                play(wave || "sawtooth", freq * genderFrequencyMultiplier[gender || "female"], 100 * sentenceProperties.rate, 0.1 * sentenceProperties.rate, destination, 0.05);
+            }
+            play(wave || "sawtooth", freq * genderFrequencyMultiplier[gender || "female"], 100 * sentenceProperties.rate, 0.1 * sentenceProperties.rate, 0.05);
+        }, 100 * sentenceProperties.rate * i);
+    });
+};
+
+const noteFrequencies = {
+    'C#': 17.32,
+    'D#': 19.45,
+    'E': 20.60,
+    'F#': 23.12,
+    'G#': 25.96,
+    'A#': 29.14,
+    'B': 30.87,
+};
+
 export class Note {
-    constructor(frequency, trail, octave, name) {
+    constructor(frequency, trail, duration, octave, name) {
         this.frequency = frequency;
         this.trail = trail;
+        this.duration = duration;
         this.octave = octave;
         this.name = name;
     }
 
     play(type, volume) {
-        play(type, this.frequency, null, this.trail, volume);
+        play(type, this.frequency, this.duration, this.trail, volume);
     }
 
-    static create = (note, octave, trail) => {
-        return new Note(noteFrequencies[note] * Math.pow(2, octave), trail, octave, note);
+    static create = (note, octave, trail, duration) => {
+        return new Note(noteFrequencies[note] * Math.pow(2, octave), trail, duration, octave, note);
     };
 }
 
@@ -96,22 +116,22 @@ export class DynamicTrack {
         this.lastTime = 0;
         this.toneLength = 0;
         this.noteIndex = 0;
+        this.lastNote = null;
     }
 
     playNextNote(time, msPerBeat) {
         if ((time - this.lastTime) >= (msPerBeat * this.tempo)) {
-            let nextIndex = this.noteIndex+1;
+            let nextIndex = this.noteIndex + 1;
             if (nextIndex >= this.notePool.length) {
                 nextIndex = 0;
             }
             const noteToPlay = pick(...this.notePool[this.noteIndex]);
-            const length = this.notePool[nextIndex].includes(null) ? 1 : 2;
-            if (noteToPlay) {
-                Note.create(noteToPlay[0], noteToPlay[1], length)
-                    .play("triangle", this.volume);
-                Note.create(noteToPlay[0], noteToPlay[1], length)
+            const length = pick(0.5, 1, 2);
+            if (noteToPlay && !(!this.lastNote && this.noteIndex % 2)) {
+                Note.create(noteToPlay[0], noteToPlay[1], length, Math.max(1, length) * 1000)
                     .play(this.type, this.volume);
             }
+            this.lastNote = noteToPlay;
             this.noteIndex = nextIndex;
             this.lastTime = time;
         }

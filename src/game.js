@@ -2,6 +2,7 @@ import { Person } from './entities/person';
 import { Room } from './entities/room';
 import { Table } from './entities/table';
 import { UI } from './ui/ui';
+import { UIAction } from './ui/ui-action';
 import { DynamicTrack, Music, Note, noteFrequency, play, Track } from './utils/audio-utils';
 import { generateName } from './utils/name-gen';
 import { int, pick } from './utils/random-utils';
@@ -117,6 +118,9 @@ function onLetGo(e) {
                 ui.removeFromHand(selection);
             }
         }
+        if(selection instanceof UIAction) {
+            selection.execute();
+        }
     }
     if (e.button === 2 || isLongTouch) {
         const clickedThing = room.checkClicked(mousePos);
@@ -167,87 +171,87 @@ document.addEventListener("touchcancel", () => {
 });
 
 const bassTrack = new Track([
-    Note.create("re#", 2, 3),
+    Note.create('D#', 2, 3),
     null,
-    Note.create("fa#", 2, 3),
+    Note.create('F#', 2, 3),
     null,
-    Note.create("la#", 2, 5),
+    Note.create('A#', 2, 5),
     null,
     null,
-    Note.create("sol#", 2, 3),
-    Note.create("sol#", 2, 0.5),
-    Note.create("si", 2, 1.5),
-    Note.create("re#", 3, 3),
-], "sine", 1, 0.05, 0);
+    Note.create('G#', 2, 3),
+    Note.create('G#', 2, 0.5),
+    Note.create('B', 2, 1.5),
+    Note.create('D#', 3, 3),
+], "sine", 1, 0.03, 0);
 
 
 const melodyTrack = new DynamicTrack([
-    [["re#", 4], ["fa#", 4], ["la#",4], null],
-    [["re#", 4], ["fa#", 4], ["la#",4], null],
-    [["re#", 4], ["fa#", 4], ["la#",4]],
-    [["re#", 4], ["fa#", 4], ["la#",4]],
-    [["re#", 4], ["fa#", 4], ["la#",4], null, null],
-    [["re#", 4], ["fa#", 4], ["la#",4], null, null, null],
-    [["mi", 4], ["sol#", 4], ["si", 4], null],
-    [["mi", 4], ["sol#", 4], ["si", 4], null],
-    [["mi", 4], ["sol#", 4], ["si", 4]],
-    [["mi", 4], ["sol#", 4], ["si", 4]],
-    [["mi", 4], ["sol#", 4], ["si", 4], null, null],
-    [["mi", 4], ["sol#", 4], ["si", 4], null, null, null],
-    [["fa#", 4], ["la#", 4], ["do#", 5], null],
-    [["fa#", 4], ["la#", 4], ["do#", 5], null],
-    [["fa#", 4], ["la#", 4], ["do#", 5]],
-    [["fa#", 4], ["la#", 4], ["do#", 5]],
-    [["fa#", 4], ["la#", 4], ["do#", 5], null, null],
-    [["fa#", 4], ["la#", 4], ["do#", 5], null, null, null],
-    [["do#", 4], ["mi", 4], ["sol#", 5], null],
-    [["do#", 4], ["mi", 4], ["sol#", 5], null],
-    [["do#", 4], ["mi", 4], ["sol#", 5]],
-    [["do#", 4], ["mi", 4], ["sol#", 5]],
-    [["do#", 4], ["mi", 4], ["sol#", 5], null, null],
-    [["do#", 4], ["mi", 4], ["sol#", 5], null, null, null],
-], "sine", 0.5, 0.1);
+    [['D#', 4], ['F#', 4], ['A#', 4], null, null, null],
+    [['D#', 4], ['F#', 4], ['A#', 4], null],
+    [['D#', 4], ['F#', 4], ['A#', 4], null],
+    [['D#', 4], ['F#', 4], ['A#', 4], null],
+    [['D#', 4], ['F#', 4], ['A#', 4]],
+    [['D#', 4], ['F#', 4], ['A#', 4], null, null, null],
+    [['E', 4], ['G#', 4], ['B', 4], null],
+    [['E', 4], ['G#', 4], ['B', 4], null],
+    [['E', 4], ['G#', 4], ['B', 4], null],
+    [['E', 4], ['G#', 4], ['B', 4]],
+    [['E', 4], ['G#', 4], ['B', 4]],
+    [['E', 4], ['G#', 4], ['B', 4], null, null, null],
+    [['F#', 4], ['A#', 4], null],
+    [['F#', 4], ['A#', 4], null],
+    [['F#', 4], ['A#', 4], null],
+    [['F#', 4], ['A#', 4]],
+    [['F#', 4], ['A#', 4]],
+    [['F#', 4], ['A#', 4], null, null, null],
+    [['C#', 4], ['E', 4], null],
+    [['C#', 4], ['E', 4], null],
+    [['C#', 4], ['E', 4], null],
+    [['C#', 4], ['E', 4]],
+    [['C#', 4], ['E', 4]],
+    [['C#', 4], ['E', 4], null, null, null],
+], "sine", 0.5, 0.08);
 
 const accompaniamentTracks = [
     new Track([
-        Note.create("re#", 3, 0.5),
-        Note.create("re#", 3, 2),
+        Note.create('D#', 3, 0.5),
+        Note.create('D#', 3, 2),
         null,
-        Note.create("mi", 3, 0.5),
-        Note.create("mi", 3, 2),
+        Note.create('E', 3, 0.5),
+        Note.create('E', 3, 2),
         null,
-        Note.create("fa#", 3, 0.5),
-        Note.create("fa#", 3, 2),
+        Note.create('F#', 3, 0.5),
+        Note.create('F#', 3, 2),
         null,
-        Note.create("do#", 3, 0.5),
-        Note.create("do#", 3, 2),
+        Note.create('C#', 3, 0.5),
+        Note.create('C#', 3, 2),
     ], "triangle", 1, 0.05, 1),
     new Track([
-        Note.create("fa#", 3, 0.5),
-        Note.create("fa#", 3, 2),
+        Note.create('F#', 3, 0.5),
+        Note.create('F#', 3, 2),
         null,
-        Note.create("sol#", 3, 0.5),
-        Note.create("sol#", 3, 2),
+        Note.create('G#', 3, 0.5),
+        Note.create('G#', 3, 2),
         null,
-        Note.create("la#", 3, 0.5),
-        Note.create("la#", 3, 2),
+        Note.create('A#', 3, 0.5),
+        Note.create('A#', 3, 2),
         null,
-        Note.create("mi", 3, 0.5),
-        Note.create("mi", 3, 2),
+        Note.create('E', 3, 0.5),
+        Note.create('E', 3, 2),
     ], "triangle", 1, 0.05, 1),
     new Track([
-        Note.create("la#", 3, 0.5),
-        Note.create("la#", 3, 2),
+        Note.create('A#', 3, 0.5),
+        Note.create('A#', 3, 2),
         null,
-        Note.create("si", 3, 0.5),
-        Note.create("si", 3, 2),
+        Note.create('B', 3, 0.5),
+        Note.create('B', 3, 2),
         null,
-        Note.create("do#", 4, 0.5),
-        Note.create("do#", 4, 2),
+        Note.create('C#', 4, 0.5),
+        Note.create('C#', 4, 2),
         null,
-        Note.create("sol#", 3, 0.5),
-        Note.create("sol#", 3, 2),
-    ], "triangle", 1, 0.05, 1)
+        Note.create('G#', 3, 0.5),
+        Note.create('G#', 3, 2),
+    ], "triangle", 1, 0.03, 1)
 ];
 
 const music = new Music(
@@ -258,10 +262,13 @@ const music = new Music(
 let last = 0;
 let lastPing = 0;
 window.speed = 1;
+window.speechSound = true;
 window.main = function (t) {
-    music.play(t);
+    if(ui.options.playMusic){
+        music.play(t);
+    }
     const now = t || 0;
-    if (now - last >= 5 * (1000 * window.speed)) {
+    if (now - last >= 5 * (1000 * (1/window.speed))) {
         if (!lost) {
             room.tables.forEach(t => t.updateHappiness());
             const badTable = room.tables.find(t => t.moreThanOneFurious);
@@ -298,14 +305,12 @@ window.main = function (t) {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.lineWidth=2
-    // ctx.strokeStyle="#000000"
-    // ctx.stroke(new Path2D(`M ${canvas.width/2},0 ${canvas.width/2}, ${canvas.height}`));
-    // ctx.stroke(new Path2D(`M 0,${canvas.height/2} ${canvas.width}, ${canvas.height/2}`));
     room.draw(ctx);
+    ui.resetDetectionAreas();
     ui.drawTooltip();
     ui.drawHand();
     ui.drawScore(room.totalScore);
+    ui.drawOptions();
     if (selection) {
         ctx.save();
         ctx.globalAlpha = 0.7;
@@ -317,7 +322,7 @@ window.main = function (t) {
             selection.x = mousePos.x;
             selection.y = mousePos.y;
         }
-        selection.draw(ctx);
+        selection.draw && selection.draw(ctx);
         ctx.restore();
 
         if (selection instanceof Person && hoveredSelection && hoveredSelection instanceof Table) {
@@ -339,11 +344,11 @@ window.main = function (t) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#ffffff";
         const gameOverMessages = [
-            ["Your wedding reception is ruined!", 42],
+            ["Your reception is ruined!", 42],
             [loseReasons[loseReason], 32],
             ["", 5],
             [`Happiness: ${room.totalScore}`, 44],
-            [previousScore < room.totalScore ? 'New High Score!' : `Highest: ${previousScore}`, 38],
+            [previousScore < room.totalScore ? 'New high score!' : `Highest: ${previousScore}`, 38],
             ["", 10],
             [loseTips[loseReason], 26],
             ["", 40],
