@@ -8,8 +8,6 @@ const cardDimensions = {
     border: 8
 };
 
-const tableCloth = "M 0,9 9,18 18,9 9,0 Z";
-
 //this is because of wall height
 const minEdge = 80;
 
@@ -230,8 +228,8 @@ export class Table {
 
         ctx.fillStyle = "#eae5e2";
         ctx.strokeStyle = "#ffffff";
-        ctx.fill(new Path2D(tableCloth));
-        ctx.stroke(new Path2D(tableCloth));
+        ctx.fill(new Path2D("M 0,9 9,18 18,9 9,0 Z"));
+        ctx.stroke(new Path2D("M 0,9 9,18 18,9 9,0 Z"));
 
         circle(ctx, 9, 9, 6, "#fffaf3", "fill");
         circle(ctx, 9, 9, 4, "#ffffff", "fill");

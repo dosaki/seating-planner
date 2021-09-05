@@ -7,11 +7,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seating Space Planner</title>
     <style>
-        * {margin: 0;padding: 0;}
-        html, body {height: 100%;width: 100%;overflow: auto;position: fixed;display: flex;flex-direction: column;justify-content: center;}
-        .intro {display: flex;flex-direction: row;justify-content: center;}
-        .hidden {display: none;}
-        .highlight {margin: 10px 0;text-align: center;}
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: auto;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-family: monospace;
+            background: #6c6254;
+            color: #ffffff;
+            font-size: 1.2em;
+        }
+
+        .intro {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .highlight {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        a {
+            color: #ffb48f;
+        }
+
+        a:hover {
+            color: #cfbaaf;
+        }
     </style>
 </head>
 
@@ -21,7 +58,10 @@
             <h1 class="highlight">Seating Space Planner</h1>
             <div>You've planned your wedding reception seating but unpredicted guests keep arriving!</div>
             <div>You must now plan their seating space on the fly.</div>
-            <div>Drag the guest cards to the available tables, but pay attention to your their traits and don't let them get too angry with each other.</div>
+            <div>Drag the guest cards to the available tables, but pay attention to your their traits and don't let them
+                get too angry with each other.</div>
+            <div>Guests will display a speech bubble as they chat to eachother that represents negative or positive
+                interactions, use that as a clue to who doesn't fit in a table.</div>
             <div class="highlight"><a starter href="javascript:start()">Let the guests in</a></div>
         </div>
     </div>
