@@ -273,7 +273,7 @@ window.main = function (t) {
             room.tables.forEach(t => t.updateHappiness());
             const badTable = room.tables.find(t => t.moreThanOneFurious);
             if (badTable) {
-                ui.ping(badTable.centre, "#ff0000", 8000);
+                ui.ping(badTable.centre, "#ff0000", 8000, descend);
                 lost = true;
                 loseReason = 1;
             }

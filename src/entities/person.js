@@ -40,7 +40,7 @@ const happinessName = (score) => {
     return "🔴 Furious";
 };
 
-const changeTypeColour = ["#ad0000", "#1e8e3e"];
+const changeTypeColour = ["#d43333", "#3ebd62"];
 
 export class Person {
     constructor(name, gender) {
@@ -59,6 +59,7 @@ export class Person {
         this.showHappinessChange = false;
         this.changeType = 0;
         this.speechBubbleScale = 1;
+        this.speechBubbleIsRising = true;
         // this._debug = {
         //     drawn:0
         // }
@@ -71,6 +72,8 @@ export class Person {
         if (this.showHappinessChange && window.speechSound) {
             speak(4, this.gender, "triangle", this.changeType ? "calm" : "exclamation");
         }
+        this.speechBubbleScale = 0.8;
+        this.growBubble();
         setTimeout(() => {
             this.showHappinessChange = false;
         }, 900);
@@ -95,6 +98,26 @@ export class Person {
         };
     }
 
+    growBubble() {
+        let interval = setInterval(() => {
+            this.speechBubbleScale += 0.1;
+            if (this.speechBubbleScale > 1.2) {
+                clearInterval(interval);
+                this.shrinkBubble();
+            }
+        }, 1);
+    }
+
+    shrinkBubble() {
+        let interval = setInterval(() => {
+            this.speechBubbleScale -= 0.1;
+            if (this.speechBubbleScale <= 1) {
+                this.speechBubbleScale = 1;
+                clearInterval(interval);
+            }
+        }, 1);
+    }
+
     hasTrait(traitName) {
         return !!this.traits.find(t => t.name.toLowerCase() === traitName.toLowerCase());
     }
@@ -116,6 +139,8 @@ export class Person {
     }
 
     drawSpeechBubble(ctx, colour) {
+        ctx.translate(-10 + 10*this.speechBubbleScale, -10 + 10*this.speechBubbleScale);
+        ctx.scale(this.speechBubbleScale, this.speechBubbleScale);
         ctx.translate(0, 40);
         ctx.fillStyle = colour;
         //bubble

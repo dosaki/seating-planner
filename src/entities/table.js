@@ -128,7 +128,7 @@ export class Table {
             const tableScore = 0.1 * (this.spaces.reduce((a, p) => {
                 return p === person ? 0 : a + person.scorePerson(p);
             }, 0));
-            if(pick(true, true, false)) {
+            if(pick(true, true, true, false)) {
                 person.happiness = person.happiness + tableScore;
             }
         });

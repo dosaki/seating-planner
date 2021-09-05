@@ -188,14 +188,14 @@ export class UI {
         this.ctx.restore();
     }
 
-    ping(pos, colour, duration) {
+    ping(pos, colour, duration, descend) {
         this.pings[`${pos.x}|${pos.y}|${colour}`] = 3;
         if (this.options.pingSound) {
             setTimeout(() => {
-                play(null, 50, null, 1, 0.5);
+                play(null, descend ? 100 : 50, null, 1, 0.5);
             }, 0);
             setTimeout(() => {
-                play(null, 100, null, 1, 0.5);
+                play(null, descend ? 50 : 100, null, 1, 0.5);
             }, 300);
         }
         setTimeout(() => {
