@@ -176,7 +176,7 @@ document.addEventListener("touchcancel", () => {
 document.monetization.addEventListener('monetizationstart', () => {
     ui.handLimit = 6;
     chanceIsNotTable = 5;
-    document.querySelector('[monetization]').innerHTML('Looks like you had a bit more money. You can invite an extra guest and can find tables a bit quicker.');
+    document.querySelector('[monetization]').innerHTML = 'Looks like you had a bit more money. You can invite an extra guest and can find tables a bit quicker.';
 });
 
 const bassTrack = new Track([
