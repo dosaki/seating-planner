@@ -40,6 +40,7 @@ const loseTips = [
     "Tip: Guests in your hand grow angry as time passes.",
     "Tip: Shift guests from table to table to balance out their happiness."
 ];
+let chanceIsNotTable = 6;
 let scoredSaved = false;
 let previousScore = 0;
 
@@ -171,6 +172,13 @@ document.addEventListener("touchcancel", () => {
     isLongTouch = false;
 });
 
+
+document.monetization.addEventListener('monetizationstart', () => {
+    ui.handLimit = 6;
+    chanceIsNotTable = 5;
+    document.querySelector('[monetization]').innerHTML('Looks like you had a bit more money. You can invite an extra guest and can find tables a bit quicker.');
+});
+
 const bassTrack = new Track([
     Note.create('D#', 2, 3),
     null,
@@ -298,7 +306,7 @@ window.main = function (t) {
                 }
             });
             if (pick(true, false) && !ui.atHandLimit) {
-                const tryTable = ui.hand.filter(c => c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, false, false, false, false, false, false));
+                const tryTable = ui.hand.filter(c => c instanceof Table).length <= 1 && ((room.tablesAreFull && (ui.hand.length === (ui.handLimit - 1))) || pick(true, ...new Array(chanceIsNotTable).fill(false)));
                 if (tryTable) {
                     ui.addToHand(new Table(pick(2, 4, 6, 8), 0, 0));
                 } else {
