@@ -30,6 +30,7 @@ startingTable.y = window.innerHeight / 2 - startingTable.height / 2;
 room.addTable(startingTable);
 
 let lost = false;
+let canLose = true;
 let loseReason = 0;
 const loseReasons = [
     "You kept your guests waiting for too long.",
@@ -118,7 +119,7 @@ function onLetGo(e) {
                 ui.removeFromHand(selection);
             }
         }
-        if(selection instanceof UIAction) {
+        if (selection instanceof UIAction) {
             selection.execute();
         }
     }
@@ -259,29 +260,39 @@ const music = new Music(
     120
 );
 
-let last = 0;
+let lastUpdate = 0;
 let lastPing = 0;
 window.speed = 1;
 window.speechSound = true;
+// let lastDraw = 0;
+// const fps = new Array(10).fill(30);
+// let fpsIndex = 0;
+
+// window.showFPS = false;
+// window.godMode = () => {
+//     canLose = !canLose;
+//     console.log(`Godmode: ${!canLose}`);
+// };
+
 window.main = function (t) {
-    if(ui.options.playMusic){
+    if (ui.options.playMusic) {
         music.play(t);
     }
     const now = t || 0;
-    if (now - last >= 5 * (1000 * (1/window.speed))) {
+    if (now - lastUpdate >= 5 * (1000 * (1 / window.speed))) {
         if (!lost) {
             room.tables.forEach(t => t.updateHappiness());
             const badTable = room.tables.find(t => t.moreThanOneFurious);
             if (badTable) {
-                ui.ping(badTable.centre, "#ff0000", 8000, descend);
-                lost = true;
+                ui.ping(badTable.centre, "#ff0000", 8000, true);
+                lost = true && canLose;
                 loseReason = 1;
             }
             ui.hand.forEach(card => {
                 if (card instanceof Person) {
                     card.happiness -= card.hasTrait("impatient") ? int(3, 6) : (card.hasTrait("patient") ? int(0, 2) : int(1, 4));
                     if (card.happiness <= -50) {
-                        lost = true;
+                        lost = true && canLose;
                         loseReason = 0;
                     }
                 }
@@ -301,7 +312,8 @@ window.main = function (t) {
                 lastPing = now;
             }
         }
-        last = now;
+    
+        lastUpdate = now;
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -360,6 +372,15 @@ window.main = function (t) {
             ctx.fillText(message[0], canvas.width / 2 - (message[0].length * message[1] * 0.5625) / 2, (canvas.height / 2 - totalSize) + (i * 40 + message[1] * 0.5625));
         });
     }
+    // if (window.showFPS) {
+    //     fps[fpsIndex] = 1 / ((now - lastDraw) / 1000);
+    //     ctx.fillText(`${Math.round(fps.reduce((a, b) => a + b, 0) / fps.length)} fps`, window.cWidth / 2 - 2, 100);
+    //     fpsIndex++;
+    //     if (fpsIndex > fps.length) {
+    //         fpsIndex = 0;
+    //     }
+    // }
+    // lastDraw = now;
     window.requestAnimationFrame(main);
 };
 

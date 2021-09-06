@@ -59,7 +59,9 @@ export class Person {
         this.showHappinessChange = false;
         this.changeType = 0;
         this.speechBubbleScale = 1;
-        this.speechBubbleIsRising = true;
+        this.speechBubbleIsGrowing = null;
+        this.speechBubbleIsDisappearing = null;
+        this.framesShown = 0;
         // this._debug = {
         //     drawn:0
         // }
@@ -67,16 +69,13 @@ export class Person {
 
     set happiness(value) {
         this.changeType = this._happiness > value ? 0 : 1;
-        this.showHappinessChange = this._happiness !== value; //only show if there's an actual change (i.e. non-zero change)
+        this.showHappinessChange = (this._happiness !== value) && pick(true, false);
         this._happiness = Math.max(Math.min(value, 50), -50);
         if (this.showHappinessChange && window.speechSound) {
             speak(4, this.gender, "triangle", this.changeType ? "calm" : "exclamation");
         }
         this.speechBubbleScale = 0.8;
-        this.growBubble();
-        setTimeout(() => {
-            this.showHappinessChange = false;
-        }, 900);
+        this.speechBubbleIsGrowing = this.showHappinessChange;
     }
 
     get happiness() {
@@ -96,26 +95,6 @@ export class Person {
             width: this.cardDimensions.width,
             height: this.cardDimensions.height / 3.8
         };
-    }
-
-    growBubble() {
-        let interval = setInterval(() => {
-            this.speechBubbleScale += 0.1;
-            if (this.speechBubbleScale > 1.2) {
-                clearInterval(interval);
-                this.shrinkBubble();
-            }
-        }, 1);
-    }
-
-    shrinkBubble() {
-        let interval = setInterval(() => {
-            this.speechBubbleScale -= 0.1;
-            if (this.speechBubbleScale <= 1) {
-                this.speechBubbleScale = 1;
-                clearInterval(interval);
-            }
-        }, 1);
     }
 
     hasTrait(traitName) {
@@ -138,8 +117,41 @@ export class Person {
         return this;
     }
 
+    updateBubbleAnimation() {
+        if(this.showHappinessChange){
+            if (this.speechBubbleIsGrowing) {
+                this.speechBubbleScale += 0.03;
+                if (this.speechBubbleScale > 1.2) {
+                    this.speechBubbleIsGrowing = false;
+                }
+            }
+            if (!this.speechBubbleIsGrowing && !this.speechBubbleIsDisappearing) {
+                this.speechBubbleScale -= 0.05;
+                if (this.speechBubbleScale <= 1) {
+                    this.speechBubbleScale = 1;
+                    this.framesShown++
+                }
+            }
+            if(this.framesShown === 60 && !this.speechBubbleIsDisappearing){
+                this.speechBubbleIsDisappearing = true;
+                this.speechBubbleIsGrowing = true;
+            }
+        }
+
+        if(this.speechBubbleIsDisappearing && !this.speechBubbleIsGrowing){
+            this.speechBubbleScale -= 0.1;
+            if (this.speechBubbleScale <= 0) {
+                this.speechBubbleScale = 0;
+                this.showHappinessChange = false;
+                this.speechBubbleIsDisappearing = false;
+                this.speechBubbleIsGrowing = false;
+                this.framesShown = 0;
+            }
+        }
+    }
+
     drawSpeechBubble(ctx, colour) {
-        ctx.translate(-10 + 10*this.speechBubbleScale, -10 + 10*this.speechBubbleScale);
+        ctx.translate(-10 + 10 * this.speechBubbleScale, -10 + 10 * this.speechBubbleScale);
         ctx.scale(this.speechBubbleScale, this.speechBubbleScale);
         ctx.translate(0, 40);
         ctx.fillStyle = colour;
@@ -206,6 +218,7 @@ export class Person {
                 circle(ctx, Person.dimensions.width / 2 - 15, 0, 30, happinessColour(happinessChange), "fill");
             }
             if (this.showHappinessChange) {
+                this.updateBubbleAnimation();
                 if (!this.changeType) {
                     this.drawSpikySpeechBubble(ctx, changeTypeColour[this.changeType]);
                 } else {
