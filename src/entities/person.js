@@ -198,7 +198,6 @@ export class Person {
         ctx.filter = 'blur(4px)';
         ctx.fillStyle = `${happinessColour(this.happiness)}70`;
         ctx.fill(shadow);
-        ctx.filter = 'blur(4px)';
         ctx.fillStyle = "#00000060";
         ctx.fill(shadow);
         ctx.filter = "none";
