@@ -2,4 +2,6 @@ app
 dist
 node_modules
 coverage
-publish.sh
+terraform/.terraform.lock.hcl
+terraform/.terraform
+.idea

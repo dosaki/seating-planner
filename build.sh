@@ -10,6 +10,8 @@ CURRENT_DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 
 cd "${CURRENT_DIR}"
 
+NAME="seating-planner"
+
 ARG="$1"
 if [[ "${ARG}" == "--dev" ]];then
   IS_DEV_MODE="TRUE"
@@ -32,13 +34,20 @@ cat ./static/index.html | tr '\n' ' ' | sed 's/  //g' > ./app/index.html
 if [[ "${IS_DIST}" == "TRUE" ]]; then
   rm -r ./dist
   mkdir ./dist
-  7z a -r ./dist/seating-planner.zip ./app/* -xr!*.map
-  size=`du -b ./dist/seating-planner.zip | awk '{print $1}'`
+  7z a -mpass=15 -r ./dist/${NAME}.zip ./app/* -xr!*.map
+  unix_type=$(uname -a | awk '{ print $1 }')
+  if [[ "${unix_type}" == "Darwin" ]]; then
+    size=`stat -f%z ./dist/${NAME}.zip`
+  else
+    size=`du -b ./dist/${NAME}.zip | awk '{print $1}'`
+  fi
   size_diff=$((size - 13312))
   if [[ ${size_diff} -gt 0 ]]; then
-    echo -e "\e[93m\e[1m[WARNING] TOO BIG! File size is ${size} (${size_diff} over).\e[39m"
+    echo -e "\033[93m\033[1m[WARNING] TOO BIG! File size is ${size} (${size_diff} over).\033[39m"
+    exit 1
   else
   size_left=$((size_diff*-1))
-    echo -e "\e[92m\e[1m[SUCCESS] File size under 13k: ${size} (${size_left} left).\e[39m"
+    echo -e "\033[92m\033[1m[SUCCESS] File size under 13k: ${size} (${size_left} left).\033[39m"
+    exit 0
   fi
 fi
